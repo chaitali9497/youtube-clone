@@ -1,47 +1,48 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
+
 import App from "../App";
+import Auth from "../Layout/Auth";
 import Loader from "../components/Loader";
 
 // Lazy pages
 const Home = lazy(() => import("../pages/Home"));
+const Watch = lazy(() => import("../pages/Watch"));
 const CreateAccount = lazy(() => import("../pages/CreateAccount"));
 const Login = lazy(() => import("../pages/Login"));
 const ErrorPage = lazy(() => import("../pages/Error"));
 
+const withSuspense = (Component) => (
+  <Suspense fallback={<Loader />}>
+    <Component />
+  </Suspense>
+);
+
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <App />, // Layout (Navbar + Sidebar + Outlet)
-    errorElement: (
-      <Suspense fallback={<Loader />}>
-        <ErrorPage />
-      </Suspense>
-    ),
+    element: <App />, // Main layout
+    errorElement: withSuspense(ErrorPage),
     children: [
       {
-        index: true, // '/'
-        element: (
-          <Suspense fallback={<Loader />}>
-            <Home />
-          </Suspense>
-        ),
+        index: true,
+        element: withSuspense(Home),
       },
       {
-        path: "create-account", // '/create-account'
-        element: (
-          <Suspense fallback={<Loader />}>
-            <CreateAccount />
-          </Suspense>
-        ),
+        path: "watch/:id",
+        element: withSuspense(Watch),
+      },
+    ],
+  },
+  {
+    element: <Auth />, // Auth layout
+    children: [
+      {
+        path: "create-account",
+        element: withSuspense(CreateAccount),
       },
       {
-        path: "login", // '/login'
-        element: (
-          <Suspense fallback={<Loader />}>
-            <Login />
-          </Suspense>
-        ),
+        path: "login",
+        element: withSuspense(Login),
       },
     ],
   },

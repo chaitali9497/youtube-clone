@@ -1,9 +1,10 @@
-import { useState } from "react";
+// src/Layout/Main.jsx
 import { Outlet } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import { useState } from "react";
 
-function App() {
+function Main() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -12,7 +13,7 @@ function App() {
       <Sidebar isOpen={sidebarOpen} />
 
       <main
-        className={`pt-14 transition-all duration-300 bg-gray-50 min-h-screen
+        className={`pt-14 transition-all duration-300  min-h-screen
         ${sidebarOpen ? "ml-60" : "ml-20"}`}
       >
         <Outlet />
@@ -21,4 +22,4 @@ function App() {
   );
 }
 
-export default App;
+export default Main;

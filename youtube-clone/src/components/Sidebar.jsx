@@ -11,28 +11,45 @@ import { FaYoutube } from "react-icons/fa";
 import { RiMovie2Line, RiShoppingBagLine } from "react-icons/ri";
 import { BiUserCircle } from "react-icons/bi";
 import { BsPlayBtn } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 
 function Sidebar({ isOpen }) {
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+
   return (
     <aside
       className={`fixed top-14 left-0 h-[calc(100vh-56px)] bg-white 
-  overflow-y-auto transition-all duration-300 sidebar-scroll
-  ${isOpen ? "w-60" : "w-20"}`}
+      overflow-y-auto transition-all duration-300 sidebar-scroll
+      ${isOpen ? "w-60" : "w-20"}`}
     >
-      {isOpen ? <FullSidebar /> : <MiniSidebar />}
+      {isOpen ? (
+        <FullSidebar isLoggedIn={isLoggedIn} />
+      ) : (
+        <MiniSidebar isLoggedIn={isLoggedIn} />
+      )}
     </aside>
   );
 }
 
 export default Sidebar;
 
-function MiniSidebar() {
+/* ================= MINI SIDEBAR ================= */
+
+function MiniSidebar({ isLoggedIn }) {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col items-center gap-6 py-4">
       <MiniItem icon={<FiHome />} label="Home" />
       <MiniItem icon={<SiYoutubeshorts />} label="Shorts" />
       <MiniItem icon={<MdOutlineSubscriptions />} label="Subscriptions" />
-      <MiniItem icon={<BiUserCircle className="text-xl" />} label="sign in" />
+
+      {/*  Show Sign in ONLY if not logged in */}
+      {!isLoggedIn && (
+        <div onClick={() => navigate("/login")}>
+          <MiniItem icon={<BiUserCircle className="text-xl" />} label="Sign in" />
+        </div>
+      )}
     </div>
   );
 }
@@ -46,29 +63,48 @@ function MiniItem({ icon, label }) {
   );
 }
 
-function FullSidebar() {
+/* ================= FULL SIDEBAR ================= */
+
+function FullSidebar({ isLoggedIn }) {
+  const navigate = useNavigate();
+
   return (
     <>
       <Section>
         <Item icon={<FiHome />} label="Home" active />
         <Item icon={<SiYoutubeshorts />} label="Shorts" />
         <Item icon={<MdOutlineSubscriptions />} label="Subscriptions" />
-        <Item icon={<BiUserCircle />} label="You" />
-        <Item icon={<FiClock />} label="History" />
+
+        {/* Show You & History ONLY if logged in */}
+        {isLoggedIn && (
+          <>
+            <Item icon={<BiUserCircle />} label="You" />
+            <Item icon={<FiClock />} label="History" />
+          </>
+        )}
       </Section>
 
       <Divider />
 
-      <div className="px-4 py-3 text-sm text-gray-700">
-        <p>Sign in to like videos,</p>
-        <p>comment, and subscribe.</p>
-        <button className="mt-3 flex items-center gap-2 px-4 py-1.5 border border-gray-300 rounded-full text-blue-600 hover:bg-gray-100">
-          <BiUserCircle className="text-xl" />
-          Sign in
-        </button>
-      </div>
+    {/*  Show Sign in ONLY if not logged in */}
+      {!isLoggedIn && (
+        <>
+          <div className="px-4 py-3 text-sm text-gray-700">
+            <p>Sign in to like videos,</p>
+            <p>comment, and subscribe.</p>
 
-      <Divider />
+            <button
+              onClick={() => navigate("/login")}
+              className="mt-3 flex items-center gap-2 px-4 py-1.5 border border-gray-300 rounded-full text-blue-600 hover:bg-gray-100"
+            >
+              <BiUserCircle className="text-xl" />
+              Sign in
+            </button>
+          </div>
+
+          <Divider />
+        </>
+      )}
 
       <Section title="Explore">
         <Item icon={<RiShoppingBagLine />} label="Shopping" />
@@ -79,9 +115,18 @@ function FullSidebar() {
       <Divider />
 
       <Section title="More from YouTube">
-        <Item icon={<FaYoutube className="text-red-600" />} label="YouTube Premium" />
-        <Item icon={<BsPlayBtn className="text-red-600" />} label="YouTube Music" />
-        <Item icon={<FaYoutube className="text-red-600" />} label="YouTube Kids" />
+        <Item
+          icon={<FaYoutube className="text-red-600" />}
+          label="YouTube Premium"
+        />
+        <Item
+          icon={<BsPlayBtn className="text-red-600" />}
+          label="YouTube Music"
+        />
+        <Item
+          icon={<FaYoutube className="text-red-600" />}
+          label="YouTube Kids"
+        />
       </Section>
 
       <Divider />
@@ -100,6 +145,8 @@ function FullSidebar() {
     </>
   );
 }
+
+/* ================= REUSABLE COMPONENTS ================= */
 
 function Section({ title, children }) {
   return (
