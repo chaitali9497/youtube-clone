@@ -15,9 +15,9 @@ import { BsPlayBtn } from "react-icons/bs";
 function Sidebar({ isOpen }) {
   return (
     <aside
-      className={`fixed top-14 left-0 h-[calc(100vh-56px)] bg-white border-r
-      overflow-y-auto transition-all duration-300
-      ${isOpen ? "w-60" : "w-20"}`}
+      className={`fixed top-14 left-0 h-[calc(100vh-56px)] bg-white 
+  overflow-y-auto transition-all duration-300 sidebar-scroll
+  ${isOpen ? "w-60" : "w-20"}`}
     >
       {isOpen ? <FullSidebar /> : <MiniSidebar />}
     </aside>

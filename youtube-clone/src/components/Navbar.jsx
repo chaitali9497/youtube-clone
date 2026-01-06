@@ -3,7 +3,7 @@ import SearchBar from "./Searchbar";
 
 function Navbar({ toggleSidebar }) {
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 bg-white border-b flex items-center px-4 z-50">
+    <header className="fixed top-0 left-0 right-0 h-14 bg-white  flex items-center px-4 z-50">
       
       <div className="flex items-center gap-4">
         <FiMenu
