@@ -4,6 +4,7 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Auth from "../Layout/Auth";
 import Loader from "../components/Loader";
+import Main from "../Layout/Main";
 
 // Lazy pages
 const Home = lazy(() => import("../pages/Home"));
@@ -20,7 +21,7 @@ const withSuspense = (Component) => (
 
 const router = createBrowserRouter([
   {
-    element: <App />, // Main layout
+    element: <Main />, 
     errorElement: withSuspense(ErrorPage),
     children: [
       {
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <Auth />, // Auth layout
+    element: <Auth />, 
     children: [
       {
         path: "create-account",
