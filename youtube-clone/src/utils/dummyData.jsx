@@ -9,7 +9,7 @@ export const videos = [
     duration: "2:35:20",
     thumbnail: "https://i.ytimg.com/vi/bMknfKXIFA8/maxresdefault.jpg",
     channelAvatar: "https://i.pravatar.cc/150?img=1",
-    videoUrl: "https://www.youtube.com/embed/bMknfKXIFA8",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
     description: "Learn React from scratch with real projects.",
     likes: 6900,
     comments: [
@@ -42,7 +42,7 @@ export const videos = [
     duration: "1:45:10",
     thumbnail: "https://i.ytimg.com/vi/FHTbsZEJspU/maxresdefault.jpg",
     channelAvatar: "https://i.pravatar.cc/150?img=2",
-    videoUrl: "https://www.youtube.com/embed/FHTbsZEJspU",
+    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
     description: "Build a YouTube clone UI using React & Tailwind.",
     likes: 4200,
     comments: [
@@ -100,7 +100,7 @@ export const videos = [
     duration: "4:12:00",
     thumbnail: "https://i.ytimg.com/vi/ofme2o29ngU/maxresdefault.jpg",
     channelAvatar: "https://i.pravatar.cc/150?img=4",
-    videoUrl: "https://www.youtube.com/embed/ofme2o29ngU",
+    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
     description: "Learn MongoDB from scratch with hands-on examples.",
     likes: 5600,
     comments: [
@@ -414,7 +414,7 @@ export const videos = [
   duration: "1:15:50",
   thumbnail: "https://picsum.photos/seed/yt16/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=16",
-  videoUrl: "https://www.youtube.com/embed/NT299zIk2JY",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Build a YouTube clone UI using React and Tailwind CSS.",
   likes: 5400,
   comments: [

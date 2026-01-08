@@ -1,8 +1,10 @@
 import { useParams } from "react-router-dom";
 import { videos } from "../utils/dummyData";
-import { FiThumbsUp, FiShare2, FiMoreHorizontal } from "react-icons/fi";
+import { FiShare2, FiMoreHorizontal } from "react-icons/fi";
 import Comments from "../components/Comments";
 import VideoPlayer from "../components/VideoPlayer";
+import RecommendedVideoCard from "../components/RecommendedVideoCard";
+import LikeDislike from "../components/LikeDislike";
 
 function Watch() {
   const { id } = useParams();
@@ -14,18 +16,14 @@ function Watch() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div
-        className="
-          max-w-350 mx-auto px-4
-          flex flex-col lg:flex-row gap-6
-        "
-      >
-        {/* videoplayer */}
+      <div className="max-w-350 mx-auto px-4 flex flex-col lg:flex-row gap-6">
+        {/* VIDEO */}
         <div className="w-full lg:flex-3">
           <div className="aspect-video bg-black rounded-none sm:rounded-xl overflow-hidden">
             <VideoPlayer
               src={video.videoUrl}
               poster={video.thumbnail}
+              videoId={video.id}
             />
           </div>
 
@@ -34,7 +32,7 @@ function Watch() {
           </h1>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
-            {/* Channel */}
+            {/* CHANNEL */}
             <div className="flex items-center gap-3">
               <img
                 src={video.channelAvatar}
@@ -49,21 +47,25 @@ function Watch() {
               </div>
             </div>
 
-            {/* Actions */}
+            {/* ACTIONS */}
             <div className="flex gap-3 flex-wrap">
-              <button className="flex items-center gap-1 px-4 py-2 bg-gray-200 rounded-full">
-                <FiThumbsUp /> {video.likes}
-              </button>
+              {/*  ONLY THIS */}
+              <LikeDislike
+                videoId={video.id}
+                initialLikes={video.likes}
+              />
+
               <button className="flex items-center gap-1 px-4 py-2 bg-gray-200 rounded-full">
                 <FiShare2 /> Share
               </button>
+
               <button className="p-2 bg-gray-200 rounded-full">
                 <FiMoreHorizontal />
               </button>
             </div>
           </div>
 
-          {/* Description */}
+          {/* DESCRIPTION */}
           <div className="mt-4 bg-gray-100 rounded-xl p-4 text-sm">
             <p className="font-medium">
               {video.views} • {video.uploadedAt}
@@ -73,35 +75,21 @@ function Watch() {
             </p>
           </div>
 
-          {/* Comments */}
+          {/* COMMENTS */}
           <div className="hidden lg:block">
             <Comments comments={video.comments} />
           </div>
         </div>
 
-        {/*Recommended  in right sidebar */}
-        <div className="w-full lg:flex-[1.4] space-y-4">
+        {/* RECOMMENDED */}
+        <div className="w-full lg:flex-[1.4]">
           {videos
             .filter((v) => v.id !== video.id)
             .map((v) => (
-              <div key={v.id} className="flex gap-3 cursor-pointer">
-                <img
-                  src={v.thumbnail}
-                  className="w-36 h-20 sm:w-40 sm:h-24 rounded-lg object-cover"
-                  alt={v.title}
-                />
-                <div>
-                  <p className="text-sm font-semibold line-clamp-2">
-                    {v.title}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {v.channelName}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {v.views}
-                  </p>
-                </div>
-              </div>
+              <RecommendedVideoCard
+                key={v.id}
+                video={v}
+              />
             ))}
         </div>
       </div>
