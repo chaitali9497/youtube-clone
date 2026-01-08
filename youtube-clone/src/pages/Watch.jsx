@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { videos } from "../utils/dummyData";
 import { FiThumbsUp, FiShare2, FiMoreHorizontal } from "react-icons/fi";
 import Comments from "../components/Comments";
+import VideoPlayer from "../components/VideoPlayer";
 
 function Watch() {
   const { id } = useParams();
@@ -12,20 +13,19 @@ function Watch() {
   }
 
   return (
-    <div className=" bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div
         className="
           max-w-350 mx-auto px-4
           flex flex-col lg:flex-row gap-6
         "
       >
-        <div className="w-full lg:flex-3 order-1">
+        {/* videoplayer */}
+        <div className="w-full lg:flex-3">
           <div className="aspect-video bg-black rounded-none sm:rounded-xl overflow-hidden">
-            <iframe
+            <VideoPlayer
               src={video.videoUrl}
-              title={video.title}
-              className="w-full h-full"
-              allowFullScreen
+              poster={video.thumbnail}
             />
           </div>
 
@@ -33,13 +33,7 @@ function Watch() {
             {video.title}
           </h1>
 
-          <div
-            className="
-              flex flex-col sm:flex-row
-              sm:items-center sm:justify-between
-              gap-4 mt-4
-            "
-          >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
             {/* Channel */}
             <div className="flex items-center gap-3">
               <img
@@ -79,14 +73,14 @@ function Watch() {
             </p>
           </div>
 
-          {/* COMMENTS (HIDDEN ON MOBILE) */}
+          {/* Comments */}
           <div className="hidden lg:block">
             <Comments comments={video.comments} />
           </div>
         </div>
 
-        {/* RIGHT SECTION – Recommended Videos */}
-        <div className="w-full lg:flex-[1.4] space-y-4 order-2">
+        {/*Recommended  in right sidebar */}
+        <div className="w-full lg:flex-[1.4] space-y-4">
           {videos
             .filter((v) => v.id !== video.id)
             .map((v) => (
