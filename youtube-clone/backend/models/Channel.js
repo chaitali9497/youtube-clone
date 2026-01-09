@@ -23,7 +23,7 @@ const channelSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true // 🔥 one channel per user
+      unique: true 
     },
     subscribers: {
       type: Number,

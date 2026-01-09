@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 import Video from "../models/Video.js";
 import checkRequiredFields from "../utils/requiredFields.js";
-import AppError from "../utils/AppError.js";
 
 /* ================= UPLOAD VIDEO ================= */
-export const uploadVideo = async (req, res, next) => {
+export const uploadVideo = async (req, res) => {
   const { title, description, videoUrl, thumbnail } = req.body;
 
   const missingFields = checkRequiredFields({ title, videoUrl, thumbnail });
   if (missingFields.length > 0) {
-    return next(
-      new AppError(`Missing fields: ${missingFields.join(", ")}`, 400)
-    );
+    return res.status(400).json({
+      status: "fail",
+      message: `Missing fields: ${missingFields.join(", ")}`
+    });
   }
 
   const video = await Video.create({
@@ -40,11 +40,14 @@ export const getAllVideos = async (req, res) => {
 };
 
 /* ================= SEARCH VIDEOS ================= */
-export const searchVideos = async (req, res, next) => {
+export const searchVideos = async (req, res) => {
   const { q } = req.query;
 
   if (!q || q.trim() === "") {
-    return next(new AppError("Search query is required", 400));
+    return res.status(400).json({
+      status: "fail",
+      message: "Search query is required"
+    });
   }
 
   const videos = await Video.find(
@@ -63,11 +66,14 @@ export const searchVideos = async (req, res, next) => {
 };
 
 /* ================= GET VIDEO BY ID ================= */
-export const getVideoById = async (req, res, next) => {
+export const getVideoById = async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return next(new AppError("Invalid video id", 400));
+    return res.status(400).json({
+      status: "fail",
+      message: "Invalid video id"
+    });
   }
 
   const video = await Video.findById(id).populate(
@@ -76,7 +82,10 @@ export const getVideoById = async (req, res, next) => {
   );
 
   if (!video) {
-    return next(new AppError("Video not found", 404));
+    return res.status(404).json({
+      status: "fail",
+      message: "Video not found"
+    });
   }
 
   video.views += 1;
@@ -89,30 +98,36 @@ export const getVideoById = async (req, res, next) => {
 };
 
 /* ================= LIKE VIDEO ================= */
-export const likeVideo = async (req, res, next) => {
+export const likeVideo = async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return next(new AppError("Invalid video id", 400));
+    return res.status(400).json({
+      status: "fail",
+      message: "Invalid video id"
+    });
   }
 
   const video = await Video.findById(id);
   if (!video) {
-    return next(new AppError("Video not found", 404));
+    return res.status(404).json({
+      status: "fail",
+      message: "Video not found"
+    });
   }
 
   video.dislikes = video.dislikes.filter(
-    (uid) => uid.toString() !== userId.toString()
+    uid => uid.toString() !== userId.toString()
   );
 
   const alreadyLiked = video.likes.some(
-    (uid) => uid.toString() === userId.toString()
+    uid => uid.toString() === userId.toString()
   );
 
   if (alreadyLiked) {
     video.likes = video.likes.filter(
-      (uid) => uid.toString() !== userId.toString()
+      uid => uid.toString() !== userId.toString()
     );
   } else {
     video.likes.push(userId);
@@ -128,30 +143,36 @@ export const likeVideo = async (req, res, next) => {
 };
 
 /* ================= DISLIKE VIDEO ================= */
-export const dislikeVideo = async (req, res, next) => {
+export const dislikeVideo = async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return next(new AppError("Invalid video id", 400));
+    return res.status(400).json({
+      status: "fail",
+      message: "Invalid video id"
+    });
   }
 
   const video = await Video.findById(id);
   if (!video) {
-    return next(new AppError("Video not found", 404));
+    return res.status(404).json({
+      status: "fail",
+      message: "Video not found"
+    });
   }
 
   video.likes = video.likes.filter(
-    (uid) => uid.toString() !== userId.toString()
+    uid => uid.toString() !== userId.toString()
   );
 
   const alreadyDisliked = video.dislikes.some(
-    (uid) => uid.toString() === userId.toString()
+    uid => uid.toString() === userId.toString()
   );
 
   if (alreadyDisliked) {
     video.dislikes = video.dislikes.filter(
-      (uid) => uid.toString() !== userId.toString()
+      uid => uid.toString() !== userId.toString()
     );
   } else {
     video.dislikes.push(userId);
@@ -163,5 +184,44 @@ export const dislikeVideo = async (req, res, next) => {
     status: "success",
     likes: video.likes.length,
     dislikes: video.dislikes.length
+  });
+};
+
+/* ================= DELETE VIDEO ================= */
+/* ================= DELETE VIDEO ================= */
+export const deleteVideo = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  // validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Invalid video id"
+    });
+  }
+
+  const video = await Video.findById(id);
+
+  if (!video) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Video not found"
+    });
+  }
+
+  // check ownership
+  if (video.channel.toString() !== userId.toString()) {
+    return res.status(403).json({
+      status: "fail",
+      message: "You are not allowed to delete this video"
+    });
+  }
+
+  await video.deleteOne();
+
+  res.status(200).json({
+    status: "success",
+    message: "Video deleted successfully"
   });
 };

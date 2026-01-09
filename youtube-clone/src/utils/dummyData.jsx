@@ -67,7 +67,7 @@ export const videos = [
     duration: "1:30:45",
     thumbnail: "https://i.ytimg.com/vi/fBNz5xF-Kx4/maxresdefault.jpg",
     channelAvatar: "https://i.pravatar.cc/150?img=3",
-    videoUrl: "https://www.youtube.com/embed/fBNz5xF-Kx4",
+    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
     description: "Complete Node.js & Express crash course.",
     likes: 8200,
     comments: [
@@ -125,7 +125,7 @@ export const videos = [
     duration: "55:40",
     thumbnail: "https://i.ytimg.com/vi/8aGhZQkoFbQ/maxresdefault.jpg",
     channelAvatar: "https://i.pravatar.cc/150?img=5",
-    videoUrl: "https://www.youtube.com/embed/8aGhZQkoFbQ",
+    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
     description: "Most asked JavaScript interview questions explained.",
     likes: 9100,
     comments: [
@@ -157,7 +157,7 @@ export const videos = [
   duration: "1:02:15",
   thumbnail: "https://i.ytimg.com/vi/dFgzHOX84xQ/maxresdefault.jpg",
   channelAvatar: "https://i.pravatar.cc/150?img=6",
-  videoUrl: "https://www.youtube.com/embed/dFgzHOX84xQ",
+  videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
   description: "Learn Tailwind CSS from scratch in just one hour.",
   likes: 3100,
   comments: [
@@ -190,7 +190,7 @@ export const videos = [
   duration: "1:20:45",
   thumbnail: "https://picsum.photos/seed/yt7/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=7",
-  videoUrl: "https://www.youtube.com/embed/PkZNo7MFNFg",
+  videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
   description: "Complete JavaScript roadmap from beginner to advanced.",
   likes: 7600,
   comments: [
@@ -215,7 +215,7 @@ export const videos = [
   duration: "58:30",
   thumbnail: "https://picsum.photos/seed/yt8/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=8",
-  videoUrl: "https://www.youtube.com/embed/59IXY5IDrBA",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Master React Router v6 with real examples.",
   likes: 4800,
   comments: [
@@ -240,7 +240,7 @@ export const videos = [
   duration: "1:10:22",
   thumbnail: "https://picsum.photos/seed/yt9/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=9",
-  videoUrl: "https://www.youtube.com/embed/mbsmsi7l3r4",
+  videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
   description: "JWT authentication explained step by step.",
   likes: 6700,
   comments: [
@@ -265,7 +265,7 @@ export const videos = [
   duration: "2:05:10",
   thumbnail: "https://picsum.photos/seed/yt10/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=10",
-  videoUrl: "https://www.youtube.com/embed/-56x56UppqQ",
+  videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
   description: "Complete MongoDB Atlas tutorial for beginners.",
   likes: 3900,
   comments: [
@@ -290,7 +290,7 @@ export const videos = [
   duration: "42:18",
   thumbnail: "https://picsum.photos/seed/yt11/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=11",
-  videoUrl: "https://www.youtube.com/embed/qikxEIxsXco",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Closures explained in the simplest way possible.",
   likes: 5200,
   comments: [
@@ -315,7 +315,7 @@ export const videos = [
   duration: "1:00:40",
   thumbnail: "https://picsum.photos/seed/yt12/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=12",
-  videoUrl: "https://www.youtube.com/embed/UBOj6rqRUME",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Crash course on Tailwind CSS with real examples.",
   likes: 3500,
   comments: [
@@ -339,7 +339,7 @@ export const videos = [
   duration: "1:35:00",
   thumbnail: "https://picsum.photos/seed/yt13/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=13",
-  videoUrl: "https://www.youtube.com/embed/l8WPWK9mS5M",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Build a complete REST API using Express and MongoDB.",
   likes: 8800,
   comments: [
@@ -364,7 +364,7 @@ export const videos = [
   duration: "39:55",
   thumbnail: "https://picsum.photos/seed/yt14/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=14",
-  videoUrl: "https://www.youtube.com/embed/Tn6-PIqc4UM",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Deep dive into React useEffect hook with examples.",
   likes: 4600,
   comments: [
@@ -389,7 +389,7 @@ export const videos = [
   duration: "1:25:12",
   thumbnail: "https://picsum.photos/seed/yt15/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=15",
-  videoUrl: "https://www.youtube.com/embed/8zKuNo4ay8E",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Prepare for frontend interviews with real questions.",
   likes: 9200,
   comments: [
@@ -439,7 +439,7 @@ export const videos = [
   duration: "48:30",
   thumbnail: "https://picsum.photos/seed/yt17/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=17",
-  videoUrl: "https://www.youtube.com/embed/iBUJVy8phqw",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Redux Toolkit explained in a simple and practical way.",
   likes: 3900,
   comments: [
@@ -464,7 +464,7 @@ export const videos = [
   duration: "3:10:00",
   thumbnail: "https://picsum.photos/seed/yt18/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=18",
-  videoUrl: "https://www.youtube.com/embed/XBu54nfzxAQ",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Complete backend developer roadmap for 2024.",
   likes: 10200,
   comments: [
@@ -489,7 +489,7 @@ export const videos = [
   duration: "55:45",
   thumbnail: "https://picsum.photos/seed/yt19/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=19",
-  videoUrl: "https://www.youtube.com/embed/mbsmsi7l3r4",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "JWT authentication explained clearly and practically.",
   likes: 6100,
   comments: [
@@ -514,7 +514,7 @@ export const videos = [
   duration: "1:40:20",
   thumbnail: "https://picsum.photos/seed/yt20/400/225",
   channelAvatar: "https://i.pravatar.cc/150?img=20",
-  videoUrl: "https://www.youtube.com/embed/R9I85RhI7Cg",
+  videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   description: "Deep dive into advanced JavaScript concepts.",
   likes: 11800,
   comments: [
