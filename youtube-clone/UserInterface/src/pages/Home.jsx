@@ -1,18 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { videos } from "../utils/dummyData";
+import api from "../utils/axios";
 import FilterBar from "../components/FilterBar";
+import Loader from "../components/Loader";
 
 function Home() {
   const isLoggedIn = localStorage.getItem("isLoggedIn");
+
   const [activeFilter, setActiveFilter] = useState("All");
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
-
-  // READ SEARCH QUERY FROM URL
   const [searchParams] = useSearchParams();
-  const searchQuery = searchParams.get("q")?.toLowerCase() || "";
 
-  // If user not logged in
+  const searchQuery = searchParams.get("q")?.toLowerCase() || "";
+  const safeVideos = Array.isArray(videos) ? videos : [];
+
+  /* ================= FETCH VIDEOS ================= */
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const res = await api.get("/api/videos");
+
+        // supports: { videos: [] } OR []
+        setVideos(res.data.videos || res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch videos", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVideos();
+  }, []);
+
+  /* ================= AUTH CHECK ================= */
   if (!isLoggedIn) {
     return (
       <div className="flex items-start justify-center h-full pt-8">
@@ -28,15 +51,24 @@ function Home() {
     );
   }
 
-  // FILTER + SEARCH (BOTH TOGETHER)
-  const filteredVideos = videos.filter(video => {
-    const title = video.title.toLowerCase();
-    const channel = video.channelName.toLowerCase();
+  /* ================= LOADER ================= */
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader />
+      </div>
+    );
+  }
+
+  /* ================= FILTER + SEARCH ================= */
+  const filteredVideos = safeVideos.filter(video => {
+    const title = video.title?.toLowerCase() || "";
+    const channelName = video.channel?.name?.toLowerCase() || "";
 
     const matchesSearch =
       searchQuery === "" ||
       title.includes(searchQuery) ||
-      channel.includes(searchQuery);
+      channelName.includes(searchQuery);
 
     const matchesFilter =
       activeFilter === "All" ||
@@ -45,6 +77,7 @@ function Home() {
     return matchesSearch && matchesFilter;
   });
 
+  /* ================= UI ================= */
   return (
     <>
       {/* FILTER BAR */}
@@ -58,11 +91,11 @@ function Home() {
         {filteredVideos.length > 0 ? (
           filteredVideos.map(video => (
             <div
-              key={video.id}
+              key={video._id}
               className="cursor-pointer group"
-              onClick={() => navigate(`/watch/${video.id}`)}
+              onClick={() => navigate(`/watch/${video._id}`)}
             >
-              {/* Thumbnail */}
+              {/* THUMBNAIL */}
               <div className="relative rounded-xl overflow-hidden">
                 <img
                   src={video.thumbnail}
@@ -70,10 +103,10 @@ function Home() {
                   className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                 />
 
-                {/* Overlay */}
+                {/* OVERLAY */}
                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                {/* Play Button */}
+                {/* PLAY ICON */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="bg-black/70 p-4 rounded-full">
                     <svg
@@ -86,17 +119,19 @@ function Home() {
                   </div>
                 </div>
 
-                {/* Duration */}
-                <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-0.5 rounded">
-                  {video.duration}
-                </span>
+                {/* DURATION */}
+                {video.duration && (
+                  <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-0.5 rounded">
+                    {video.duration}
+                  </span>
+                )}
               </div>
 
-              {/* Video Info */}
+              {/* VIDEO INFO */}
               <div className="flex gap-3 mt-3">
                 <img
-                  src={video.channelAvatar}
-                  alt={video.channelName}
+                  src={video.channel?.avatar || "/default-avatar.png"}
+                  alt={video.channel?.name}
                   className="w-9 h-9 rounded-full"
                   onClick={e => e.stopPropagation()}
                 />
@@ -105,11 +140,14 @@ function Home() {
                   <h3 className="text-sm font-medium line-clamp-2">
                     {video.title}
                   </h3>
+
                   <p className="text-xs text-gray-600 mt-1">
-                    {video.channelName}
+                    {video.channel?.name || "Unknown Channel"}
                   </p>
+
                   <p className="text-xs text-gray-600">
-                    {video.views} • {video.uploadedAt}
+                    {video.views?.toLocaleString()} views •{" "}
+                    {new Date(video.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>

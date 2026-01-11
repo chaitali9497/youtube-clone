@@ -5,7 +5,7 @@ import {
 } from "react-icons/fi";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { videos } from "../utils/dummyData";
+import api from "../utils/axios";
 
 const MAX_RECENTS = 8;
 
@@ -18,42 +18,54 @@ const SearchBar = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  /*  LOAD RECENT SEARCHES  */
+  /* LOAD RECENT SEARCHES */
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("recentSearches")) || [];
+    const stored =
+      JSON.parse(localStorage.getItem("recentSearches")) || [];
     setRecentSearches(stored);
   }, []);
 
-  /* SUGGESTIONS  */
+  /* FETCH SUGGESTIONS FROM BACKEND */
   useEffect(() => {
     if (!query.trim()) {
       setSuggestions([]);
       return;
     }
 
-    const matches = videos
-      .filter(v =>
-        v.title.toLowerCase().includes(query.toLowerCase())
-      )
-      .slice(0, 6);
+    const fetchSuggestions = async () => {
+      try {
+        const res = await api.get(
+          `/api/videos?search=${query}`
+        );
+        setSuggestions(res.data.slice(0, 6));
+      } catch (error) {
+        console.error("Search failed", error);
+      }
+    };
 
-    setSuggestions(matches);
+    fetchSuggestions();
   }, [query]);
 
-  /* OUTSIDE CLICK  */
+  /* OUTSIDE CLICK */
   useEffect(() => {
     const handleClickOutside = e => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
+      ) {
         setIsFocused(false);
         setSuggestions([]);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
   }, []);
 
-  /*  SAVE RECENT  */
+  /* SAVE RECENT */
   const saveRecentSearch = text => {
     const updated = [
       text,
@@ -61,10 +73,13 @@ const SearchBar = () => {
     ].slice(0, MAX_RECENTS);
 
     setRecentSearches(updated);
-    localStorage.setItem("recentSearches", JSON.stringify(updated));
+    localStorage.setItem(
+      "recentSearches",
+      JSON.stringify(updated)
+    );
   };
 
-  /*  SEARCH HANDLER  */
+  /* SEARCH HANDLER */
   const handleSearch = (text = query) => {
     if (!text.trim()) return;
     saveRecentSearch(text);
@@ -80,7 +95,10 @@ const SearchBar = () => {
     isFocused && query !== "" && suggestions.length > 0;
 
   return (
-    <div className="relative w-full max-w-2xl" ref={dropdownRef}>
+    <div
+      className="relative w-full max-w-2xl"
+      ref={dropdownRef}
+    >
       {/* SEARCH BAR */}
       <div className="flex items-center gap-3">
         <div className="flex flex-1 h-10 border border-gray-300 rounded-full overflow-hidden bg-white">
@@ -90,7 +108,9 @@ const SearchBar = () => {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
-            onKeyDown={e => e.key === "Enter" && handleSearch()}
+            onKeyDown={e =>
+              e.key === "Enter" && handleSearch()
+            }
             className="flex-1 px-4 text-sm outline-none"
           />
 
@@ -119,7 +139,9 @@ const SearchBar = () => {
                 className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
               >
                 <FiClock className="text-gray-500" />
-                <span className="text-sm line-clamp-1">{item}</span>
+                <span className="text-sm line-clamp-1">
+                  {item}
+                </span>
               </div>
             ))}
 
@@ -127,7 +149,7 @@ const SearchBar = () => {
           {showSuggestions &&
             suggestions.map(video => (
               <div
-                key={video.id}
+                key={video._id}
                 onClick={() => handleSearch(video.title)}
                 className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
               >
