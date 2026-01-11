@@ -1,25 +1,38 @@
 import mongoose from "mongoose";
 import Video from "../models/Video.js";
 import checkRequiredFields from "../utils/requiredFields.js";
+import Channel from "../models/Channel.js";
+
 
 /* ================= UPLOAD VIDEO ================= */
+
 export const uploadVideo = async (req, res) => {
   const { title, description, videoUrl, thumbnail } = req.body;
 
-  const missingFields = checkRequiredFields({ title, videoUrl, thumbnail });
-  if (missingFields.length > 0) {
+  if (!title || !videoUrl || !thumbnail) {
     return res.status(400).json({
       status: "fail",
-      message: `Missing fields: ${missingFields.join(", ")}`
+      message: "Missing required fields"
     });
   }
 
+  //  FIND USER CHANNEL
+  const channel = await Channel.findOne({ owner: req.user._id });
+
+  if (!channel) {
+    return res.status(400).json({
+      status: "fail",
+      message: "User does not have a channel"
+    });
+  }
+
+  //  CREATE VIDEO WITH CHANNEL ID
   const video = await Video.create({
     title,
     description,
     videoUrl,
     thumbnail,
-    channel: req.user._id
+    channel: channel._id
   });
 
   res.status(201).json({
@@ -30,7 +43,8 @@ export const uploadVideo = async (req, res) => {
 
 /* ================= GET ALL VIDEOS ================= */
 export const getAllVideos = async (req, res) => {
-  const videos = await Video.find().populate("channel", "name avatar");
+ const videos = await Video.find()
+  .populate("channel", "name avatar subscribers");
 
   res.status(200).json({
     status: "success",
