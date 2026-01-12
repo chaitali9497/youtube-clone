@@ -1,11 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import {
-  FiPlay,
-  FiPause,
-  FiVolume2,
-  FiVolumeX,
-  FiMaximize,
-} from "react-icons/fi";
+import {FiPlay,FiPause,FiVolume2,FiVolumeX,FiMaximize,} from "react-icons/fi";
 
 function VideoPlayer({ src, poster }) {
   const videoRef = useRef(null);
@@ -15,7 +9,7 @@ function VideoPlayer({ src, poster }) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
 
-  /*  Format time like YouTube */
+
   const formatTime = (time) => {
     if (!time || isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
@@ -25,7 +19,7 @@ function VideoPlayer({ src, poster }) {
     return `${minutes}:${seconds}`;
   };
 
-  /*  Play / Pause */
+  /* ================= CONTROL HANDLERS ================= */
   const togglePlay = () => {
     if (!videoRef.current) return;
 
@@ -38,30 +32,30 @@ function VideoPlayer({ src, poster }) {
     }
   };
 
-  /*  Mute */
+  
   const toggleMute = () => {
     videoRef.current.muted = !isMuted;
     setIsMuted(!isMuted);
   };
 
-  /* Fullscreen */
+
   const handleFullscreen = () => {
     if (videoRef.current.requestFullscreen) {
       videoRef.current.requestFullscreen();
     }
   };
 
-  /* When metadata loads */
+  /* ================= VIDEO EVENT HANDLERS ================= */
   const handleLoadedMetadata = () => {
     setDuration(videoRef.current.duration);
   };
 
-  /* Update current time */
+ 
   const handleTimeUpdate = () => {
     setCurrentTime(videoRef.current.currentTime);
   };
 
-  /*  Seek */
+  
   const handleSeek = (e) => {
     if (!duration) return;
     const seekTime = Number(e.target.value);
@@ -69,7 +63,8 @@ function VideoPlayer({ src, poster }) {
     setCurrentTime(seekTime);
   };
 
-  /*  Sync play state if user uses native controls */
+  
+/* ================= PLAY/PAUSE LISTENERS ================= */
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -85,6 +80,25 @@ function VideoPlayer({ src, poster }) {
       video.removeEventListener("pause", onPause);
     };
   }, []);
+  /* ================= AUTOPLAY ON VIDEO CHANGE ================= */
+useEffect(() => {
+  const video = videoRef.current;
+  if (!video) return;
+
+ 
+  video.muted = true;
+  setIsMuted(true);
+
+  const playPromise = video.play();
+  if (playPromise !== undefined) {
+    playPromise
+      .then(() => setIsPlaying(true))
+      .catch(() => {
+        
+      });
+  }
+}, [src]); 
+
 
   return (
     <div className="relative w-full h-full bg-black group select-none">

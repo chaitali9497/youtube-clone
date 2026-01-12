@@ -7,7 +7,7 @@ function RecommendedVideoCard({ video }) {
 
   return (
     <div
-      onClick={() => navigate(`/watch/${video.id}`)}
+      onClick={() => navigate(`/watch/${video._id}`)}
       className="
         flex gap-3 mb-4 cursor-pointer
         hover:bg-gray-100 rounded-lg p-2
@@ -35,11 +35,11 @@ function RecommendedVideoCard({ video }) {
         </h3>
 
         <p className="text-xs text-gray-600 mt-1">
-          {video.channelName || video.channel}
+          {video.channel?.name || "Unknown Channel"}
         </p>
 
         <p className="text-xs text-gray-600">
-          {video.views} • {video.uploadedAt}
+          {video.views?.toLocaleString()} views
         </p>
       </div>
     </div>

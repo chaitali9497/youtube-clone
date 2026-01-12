@@ -12,6 +12,7 @@ const Watch = lazy(() => import("../pages/Watch"));
 const CreateAccount = lazy(() => import("../pages/CreateAccount"));
 const Login = lazy(() => import("../pages/Login"));
 const ErrorPage = lazy(() => import("../pages/Error"));
+const Channel = lazy(() => import("../pages/Channel"));
 
 const withSuspense = (Component) => (
   <Suspense fallback={<Loader />}>
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
       {
         path: "watch/:id",
         element: withSuspense(Watch),
+      },
+      {
+        path: "/channel",
+        element: withSuspense(Channel),
       },
     ],
   },

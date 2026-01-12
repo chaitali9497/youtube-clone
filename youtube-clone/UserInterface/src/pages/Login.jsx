@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import signupIcon from "../assets/login-icon/google-icon.png";
+import api from "../utils/axios";
+
+
 
 function Login() {
   const navigate = useNavigate();
@@ -9,27 +12,33 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
-    //  Dummy credentials
-    const DUMMY_USER = {
-      email: "test@gmail.com",
-      password: "123456",
-    };
 
-    if (
-      email === DUMMY_USER.email &&
-      password === DUMMY_USER.password
-    ) {
-      //  Save login state
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("user", JSON.stringify({ email }));
 
-      //  Redirect to home
-      navigate("/");
-    } else {
-      setError("Invalid email or password");
-    }
-  };
+const handleLogin = async () => {
+  setError("");
+
+  if (!email || !password) {
+    setError("Email and password are required");
+    return;
+  }
+
+  try {
+    const { data } = await api.post("/auth/login", {
+      email: email.toLowerCase().trim(),
+      password,
+    });
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("isLoggedIn", "true");
+
+    navigate("/");
+  } catch (err) {
+    setError(err.response?.data?.message || "Invalid email or password");
+  }
+};
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -94,7 +103,7 @@ function Login() {
             onClick={handleLogin}
             className="btn-primary"
           >
-            Next
+            Log In
           </button>
         </div>
       </div>

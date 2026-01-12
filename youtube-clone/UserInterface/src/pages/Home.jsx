@@ -21,9 +21,9 @@ function Home() {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const res = await api.get("/api/videos");
+        const res = await api.get("/videos");
 
-        // supports: { videos: [] } OR []
+      
         setVideos(res.data.videos || res.data || []);
       } catch (error) {
         console.error("Failed to fetch videos", error);
@@ -86,7 +86,7 @@ function Home() {
         setActiveFilter={setActiveFilter}
       />
 
-      {/* VIDEO GRID */}
+      {/* VIDEOS GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6">
         {filteredVideos.length > 0 ? (
           filteredVideos.map(video => (
@@ -103,7 +103,7 @@ function Home() {
                   className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                 />
 
-                {/* OVERLAY */}
+             
                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                 {/* PLAY ICON */}

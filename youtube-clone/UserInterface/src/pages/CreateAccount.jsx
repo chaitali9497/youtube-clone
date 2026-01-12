@@ -3,15 +3,18 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import signupIcon from "../assets/signin-icon/icon-signup.png";
 import googleIcon from "../assets/login-icon/google-icon.png";
+import api from "../utils/axios";
 
 function CreateAccount() {
   const navigate = useNavigate();
 
-  // form state
+  // ======================
+  // STATE
+  // ======================
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    username: "",
+    email: "",
     password: "",
     confirm: "",
   });
@@ -19,34 +22,66 @@ function CreateAccount() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  // handle input
+  // ======================
+  // HELPERS
+  // ======================
+  const mapFormToBackendPayload = (form) => {
+    return {
+      name: `${form.firstName} ${form.lastName}`.trim(),
+      email: form.email.toLowerCase(),
+      password: form.password,
+    };
+  };
+
+  // ======================
+  // HANDLERS
+  // ======================
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // validation
   const validate = () => {
     const err = {};
 
     if (!form.firstName.trim()) err.firstName = true;
     if (!form.lastName.trim()) err.lastName = true;
-    if (!form.username.trim()) err.username = true;
-    if (form.password.length < 8) err.password = true;
+    if (!form.email.trim()) err.email = true;
+    if (form.password.length < 6) err.password = true;
     if (form.password !== form.confirm) err.confirm = true;
 
     setErrors(err);
     return Object.keys(err).length === 0;
   };
 
-  // submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError("");
+
     if (!validate()) return;
 
-    console.log("Form submitted ", form);
+    try {
+      setLoading(true);
+
+      const payload = mapFormToBackendPayload(form);
+
+      await api.post("/auth/register", payload);
+
+      navigate("/login");
+    } catch (err) {
+      setServerError(
+        err.response?.data?.message || "Account creation failed"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ======================
+  // UI
+  // ======================
   return (
     <div className="min-h-screen bg-blur-md flex items-center justify-center px-4">
       <div className="bg-white rounded-lg shadow-md w-full max-w-4xl p-8">
@@ -56,10 +91,10 @@ function CreateAccount() {
             {/* LEFT */}
             <div>
               <img
-  src={googleIcon}
-  alt="Google"
-  className="h-8 mb-2 select-none"
-/>
+                src={googleIcon}
+                alt="Google"
+                className="h-8 mb-2 select-none"
+              />
 
               <h2 className="text-xl font-medium mb-6">
                 Create your Google Account
@@ -72,7 +107,7 @@ function CreateAccount() {
                   value={form.firstName}
                   onChange={handleChange}
                   placeholder="First name"
-                  className={`border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none
+                  className={`border rounded px-3 py-2 outline-none
                   ${errors.firstName ? "border-red-500" : ""}`}
                 />
                 <input
@@ -80,37 +115,23 @@ function CreateAccount() {
                   value={form.lastName}
                   onChange={handleChange}
                   placeholder="Last name"
-                  className={`border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none
+                  className={`border rounded px-3 py-2 outline-none
                   ${errors.lastName ? "border-red-500" : ""}`}
                 />
               </div>
 
-              {/* Username */}
-              <div className="mb-2">
-                <div className="flex">
-                  <input
-                    name="username"
-                    value={form.username}
-                    onChange={handleChange}
-                    placeholder="Username"
-                    className={`flex-1 border rounded-l px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none
-                    ${errors.username ? "border-red-500" : ""}`}
-                  />
-                  <span className="border border-l-0 rounded-r px-3 py-2 bg-gray-50 text-gray-500">
-                    @gmail.com
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  You can use letters, numbers & periods
-                </p>
+              {/* Email */}
+              <div className="mb-4">
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="Email address"
+                  className={`w-full border rounded px-3 py-2 outline-none
+                  ${errors.email ? "border-red-500" : ""}`}
+                />
               </div>
-
-              <button
-                type="button"
-                className="text-blue-600 text-sm font-medium mb-4 hover:underline"
-              >
-                Use my current email address instead
-              </button>
 
               {/* Passwords */}
               <div className="grid grid-cols-2 gap-4 mb-2">
@@ -121,14 +142,13 @@ function CreateAccount() {
                     value={form.password}
                     onChange={handleChange}
                     placeholder="Password"
-                    className={`w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none
+                    className={`w-full border rounded px-3 py-2 outline-none
                     ${errors.password ? "border-red-500" : ""}`}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
+                    onClick={() => setShowPassword((p) => !p)}
                     className="absolute right-3 top-2.5 text-gray-400"
-                    title={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
                       <EyeSlashIcon className="w-5 h-5" />
@@ -145,14 +165,13 @@ function CreateAccount() {
                     value={form.confirm}
                     onChange={handleChange}
                     placeholder="Confirm"
-                    className={`w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none
+                    className={`w-full border rounded px-3 py-2 outline-none
                     ${errors.confirm ? "border-red-500" : ""}`}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowConfirm((prev) => !prev)}
+                    onClick={() => setShowConfirm((p) => !p)}
                     className="absolute right-3 top-2.5 text-gray-400"
-                    title={showConfirm ? "Hide password" : "Show password"}
                   >
                     {showConfirm ? (
                       <EyeSlashIcon className="w-5 h-5" />
@@ -163,9 +182,13 @@ function CreateAccount() {
                 </div>
               </div>
 
-              <p className="text-sm text-gray-500 mb-6">
-                Use 8 or more characters with a mix of letters, numbers & symbols
+              <p className="text-sm text-gray-500 mb-4">
+                Use 6 or more characters with a mix of letters, numbers & symbols
               </p>
+
+              {serverError && (
+                <p className="text-red-500 text-sm mb-3">{serverError}</p>
+              )}
 
               {/* Actions */}
               <div className="flex items-center justify-between">
@@ -179,14 +202,16 @@ function CreateAccount() {
 
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+                  disabled={loading}
+                  className={`bg-blue-600 text-white px-6 py-2 rounded transition
+                  ${loading ? "opacity-60 cursor-not-allowed" : "hover:bg-blue-700"}`}
                 >
-                  Next
+                  {loading ? "Creating..." : "Create Account"}
                 </button>
               </div>
             </div>
 
-            {/* RIGHT */}
+            
             <div className="hidden md:flex flex-col items-center justify-center text-center">
               <img src={signupIcon} alt="" className="w-48 mb-4" />
               <p className="text-gray-600 max-w-xs">

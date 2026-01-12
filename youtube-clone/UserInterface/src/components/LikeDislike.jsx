@@ -2,20 +2,22 @@ import { useState, useEffect } from "react";
 import { FiThumbsUp, FiThumbsDown } from "react-icons/fi";
 import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 
-function LikeDislike({ videoId, initialLikes }) {
+function LikeDislike({ videoId, initialLikes = 0 }) {
+  const safeInitialLikes = Number(initialLikes) || 0;
+
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
-  const [likes, setLikes] = useState(initialLikes || 0);
+  const [likes, setLikes] = useState(safeInitialLikes);
 
   useEffect(() => {
     const saved = localStorage.getItem(`reaction-${videoId}`);
     if (saved) {
       const data = JSON.parse(saved);
-      setLiked(data.liked);
-      setDisliked(data.disliked);
-      setLikes(initialLikes + (data.liked ? 1 : 0));
+      setLiked(!!data.liked);
+      setDisliked(!!data.disliked);
+      setLikes(safeInitialLikes + (data.liked ? 1 : 0));
     }
-  }, [videoId, initialLikes]);
+  }, [videoId, safeInitialLikes]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -28,7 +30,7 @@ function LikeDislike({ videoId, initialLikes }) {
     e.stopPropagation();
     if (liked) {
       setLiked(false);
-      setLikes((p) => p - 1);
+      setLikes((p) => Math.max(0, p - 1));
     } else {
       setLiked(true);
       setLikes((p) => p + 1);
@@ -44,7 +46,7 @@ function LikeDislike({ videoId, initialLikes }) {
       setDisliked(true);
       if (liked) {
         setLiked(false);
-        setLikes((p) => p - 1);
+        setLikes((p) => Math.max(0, p - 1));
       }
     }
   };
