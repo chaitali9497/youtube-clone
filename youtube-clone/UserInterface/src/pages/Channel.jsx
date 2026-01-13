@@ -1,88 +1,104 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "../utils/axios";
 import ChannelVideoCard from "../components/ChannelVideoCard";
+import EditVideoModal from "../components/EditVideoModal";
+import Loader from "../components/Loader";  
 
-const videos = [
-  {
-    id: 1,
-    title: "React JS Full Course 2024",
-    thumbnail: "https://i.ytimg.com/vi/bMknfKXIFA8/maxresdefault.jpg",
-    views: "1.2M views",
-    uploadedAt: "2 days ago",
-    duration: "2:35:20",
-  },
-  {
-    id: 2,
-    title: "YouTube Clone with React & Tailwind",
-    thumbnail: "https://i.ytimg.com/vi/FHTbsZEJspU/maxresdefault.jpg",
-    views: "850K views",
-    uploadedAt: "1 week ago",
-    duration: "1:45:10",
-  },
-  {
-    id: 3,
-    title: "Node.js Crash Course",
-    thumbnail: "https://i.ytimg.com/vi/f2EqECiTBL8/maxresdefault.jpg",
-    views: "640K views",
-    uploadedAt: "3 weeks ago",
-    duration: "1:10:42",
-  },
-];
+
+
 
 function Channel() {
+  const { channelId } = useParams();
+  const navigate = useNavigate();
+
+  const [channel, setChannel] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [editingVideo, setEditingVideo] = useState(null);
+
+  useEffect(() => {
+    if (!channelId) navigate("/create-channel");
+  }, [channelId, navigate]);
+
+  useEffect(() => {
+    const fetchChannel = async () => {
+      try {
+        const res = await axios.get(`/channels/${channelId}`);
+        setChannel(res.data.channel);
+        setVideos(res.data.videos);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchChannel();
+  }, [channelId]);
+
+  if (!channel) return <div><Loader /></div>;
+  const handleDelete = async (id) => {
+  if (!window.confirm("Delete this video?")) return;
+
+  try {
+    await axios.delete(`/videos/${id}`);
+    setVideos((prev) => prev.filter((v) => v._id !== id));
+  } catch {
+    alert("Delete failed");
+  }
+};
+
+
+const handleEditSave = async (id, data) => {
+  const res = await axios.put(`/videos/${id}`, data);
+
+  setVideos((prev) =>
+    prev.map((v) => (v._id === id ? res.data : v))
+  );
+};
+
+
   return (
     <div className="pt-14">
-
-      {/*  CHANNEL BANNER */}
-      <div className="h-48 md:h-56 w-full">
+      {/* Banner */}
+      <div className="h-48 md:h-56 w-full bg-gray-200">
         <img
-          src="https://i.imgur.com/8Km9tLL.jpg"
-          alt="Channel Banner"
+          src={channel.banner || "https://i.imgur.com/8Km9tLL.jpg"}
           className="w-full h-full object-cover"
         />
       </div>
 
-      {/*  CHANNEL HEADER */}
-      <div className="flex flex-col md:flex-row items-start md:items-center 
-                      gap-6 px-6 py-6 bg-white">
+      {/* Header */}
+      <div className="px-6 py-6 bg-white flex gap-6 items-center">
         <img
-          src="https://i.pravatar.cc/150?img=12"
-          alt="Channel Avatar"
+          src={channel.avatar || `https://ui-avatars.com/api/?name=${channel.name}`}
           className="w-24 h-24 rounded-full"
         />
 
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold">Code With Chaiti</h1>
-          <p className="text-gray-600 text-sm">
-            @codewithchaiti • 120K subscribers • 120 videos
-          </p>
-          <p className="text-gray-700 text-sm mt-1 max-w-xl">
-            Learn React, Node.js, MongoDB & build real-world projects 🚀
+        <div>
+          <h1 className="text-2xl font-bold">{channel.name}</h1>
+          <p className="text-sm text-gray-600">
+            @{channel.handle} • {videos.length} videos
           </p>
         </div>
-
-        <button className="bg-black text-white px-6 py-2 rounded-full 
-                           hover:bg-gray-800 transition">
-          Subscribe
-        </button>
       </div>
 
-      {/*  CHANNEL TABS */}
-      <div className="border-b px-6">
-        <ul className="flex gap-8 text-sm font-medium text-gray-600">
-          <li className="pb-3 border-b-2 border-black text-black cursor-pointer">
-            Home
-          </li>
-          <li className="pb-3 cursor-pointer hover:text-black">Videos</li>
-          <li className="pb-3 cursor-pointer hover:text-black">Shorts</li>
-          <li className="pb-3 cursor-pointer hover:text-black">About</li>
-        </ul>
-      </div>
+      {/* Videos */}
+      <div className="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        {videos.map((video) => (
+  <ChannelVideoCard
+    key={video._id}
+    video={video}
+    onEdit={setEditingVideo}
+    onDelete={handleDelete}
+  />
+))}
+{editingVideo && (
+  <EditVideoModal
+    video={editingVideo}
+    onClose={() => setEditingVideo(null)}
+    onSave={handleEditSave}
+  />
+)}
 
-      {/*  VIDEOS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 
-                      gap-6 p-6">
-        {videos.map(video => (
-          <ChannelVideoCard key={video.id} video={video} />
-        ))}
       </div>
     </div>
   );

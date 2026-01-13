@@ -2,33 +2,16 @@ import mongoose from "mongoose";
 
 const channelSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    description: {
-      type: String,
-      default: ""
-    },
-    avatar: {
-      type: String,
-      default: ""
-    },
-    banner: {
-      type: String,
-      default: ""
-    },
+   name: { type: String, required: true, unique: true },
+    description: String,
+    banner: String,
+    avatar: String,
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      unique: true 
+      required: true
     },
-    subscribers: {
-      type: Number,
-      default: 0
-    }
+    subscribers: { type: Number, default: 0 }
   },
   { timestamps: true }
 );

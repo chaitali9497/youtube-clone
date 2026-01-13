@@ -117,7 +117,8 @@ function Navbar({ toggleSidebar }) {
                       </span>
                      {user?.channel ? (
   <button
-    onClick={() => navigate("/channel")}
+    onClick={() => navigate(`/channel/${user?.channel?._id}`)}
+
     className="text-sm text-blue-600 mt-1 text-left"
   >
     View your channel
@@ -185,7 +186,7 @@ function Navbar({ toggleSidebar }) {
 
       {/* ================= MOBILE SEARCH OVERLAY ================= */}
       {showMobileSearch && (
-        <div className="fixed inset-0 bg-white z-[60] flex items-center px-3">
+        <div className="fixed inset-0 bg-white z-60 flex items-center px-3">
           <button
             onClick={() => setShowMobileSearch(false)}
             className="text-xl mr-3"

@@ -84,3 +84,19 @@ export const login = async (req, res) => {
     }
   });
 };
+const channel = await Channel.findOne({ owner: user._id });
+
+res.status(200).json({
+  user: {
+    ...user._doc,
+    channel: channel
+      ? {
+          _id: channel._id,
+          name: channel.name,
+          avatar: channel.avatar
+        }
+      : null
+  },
+  token
+});
+

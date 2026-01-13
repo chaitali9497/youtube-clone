@@ -110,6 +110,26 @@ export const getVideoById = async (req, res) => {
     video
   });
 };
+export const getChannelById = async (req, res) => {
+  try {
+    const channel = await Channel.findById(req.params.channelId)
+      .populate("owner", "username");
+
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    const videos = await Video.find({ channel: channel._id })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      channel,
+      videos
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 /* ================= LIKE VIDEO ================= */
 export const likeVideo = async (req, res) => {
@@ -202,12 +222,10 @@ export const dislikeVideo = async (req, res) => {
 };
 
 /* ================= DELETE VIDEO ================= */
-/* ================= DELETE VIDEO ================= */
 export const deleteVideo = async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
 
-  // validate ObjectId
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({
       status: "fail",
@@ -216,7 +234,6 @@ export const deleteVideo = async (req, res) => {
   }
 
   const video = await Video.findById(id);
-
   if (!video) {
     return res.status(404).json({
       status: "fail",
@@ -224,8 +241,11 @@ export const deleteVideo = async (req, res) => {
     });
   }
 
-  // check ownership
-  if (video.channel.toString() !== userId.toString()) {
+  //  find channel owned by user
+  const channel = await Channel.findOne({ owner: userId });
+
+  //  correct ownership check
+  if (!channel || video.channel.toString() !== channel._id.toString()) {
     return res.status(403).json({
       status: "fail",
       message: "You are not allowed to delete this video"
@@ -239,3 +259,4 @@ export const deleteVideo = async (req, res) => {
     message: "Video deleted successfully"
   });
 };
+
