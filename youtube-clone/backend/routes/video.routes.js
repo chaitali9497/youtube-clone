@@ -7,16 +7,16 @@ import {
     likeVideo,
     dislikeVideo
 } from "../controllers/video.controller.js";
-import { protect } from "../middleware/auth.middleware.js";
+import authMiddleware from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
 router.get("/", getAllVideos);
 router.get("/:id", getVideoById);
-router.post("/", protect, uploadVideo);
+router.post("/", authMiddleware, uploadVideo);
 router.get("/search", searchVideos);
-router.post("/:id/like", protect, likeVideo);
-router.post("/:id/dislike", protect, dislikeVideo);
+router.post("/:id/like", authMiddleware, likeVideo);
+router.post("/:id/dislike", authMiddleware, dislikeVideo);
 
 
 export default router;
