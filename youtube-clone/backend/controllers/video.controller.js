@@ -1,11 +1,9 @@
 import mongoose from "mongoose";
 import Video from "../models/Video.js";
-import checkRequiredFields from "../utils/requiredFields.js";
 import Channel from "../models/Channel.js";
-
+import Comment from "../models/Comment.js";
 
 /* ================= UPLOAD VIDEO ================= */
-
 export const uploadVideo = async (req, res) => {
   const { title, description, videoUrl, thumbnail } = req.body;
 
@@ -16,9 +14,8 @@ export const uploadVideo = async (req, res) => {
     });
   }
 
-  // FIND USER CHANNEL
+  // find channel via JWT user
   const channel = await Channel.findOne({ owner: req.user._id });
-
   if (!channel) {
     return res.status(400).json({
       status: "fail",
@@ -26,30 +23,35 @@ export const uploadVideo = async (req, res) => {
     });
   }
 
-  // CREATE VIDEO WITH CHANNEL ID
+  // create video
   const video = await Video.create({
     title,
     description,
     videoUrl,
     thumbnail,
     channel: channel._id,
+    commentsCount: 0,
   });
 
-  // CREATE 2 DEFAULT COMMENTS FOR THIS VIDEO
+  // default comments
   await Comment.insertMany([
     {
       text: "Great video! 🔥",
       video: video._id,
-      user: req.user._id, // channel owner
-      likes: 0,
+      user: req.user._id,
+      likes: [],
     },
     {
       text: "Thanks for watching 😊",
       video: video._id,
       user: req.user._id,
-      likes: 0,
+      likes: [],
     },
   ]);
+
+  await Video.findByIdAndUpdate(video._id, {
+    $inc: { commentsCount: 2 },
+  });
 
   res.status(201).json({
     status: "success",
@@ -57,43 +59,16 @@ export const uploadVideo = async (req, res) => {
   });
 };
 
-
 /* ================= GET ALL VIDEOS ================= */
 export const getAllVideos = async (req, res) => {
- const videos = await Video.find()
-  .populate("channel", "name avatar subscribers");
-  
+  const videos = await Video.find()
+    .populate("channel", "name avatar subscribers")
+    .sort({ createdAt: -1 });
 
   res.status(200).json({
     status: "success",
     results: videos.length,
-    videos
-  });
-};
-
-/* ================= SEARCH VIDEOS ================= */
-export const searchVideos = async (req, res) => {
-  const { q } = req.query;
-
-  if (!q || q.trim() === "") {
-    return res.status(400).json({
-      status: "fail",
-      message: "Search query is required"
-    });
-  }
-
-  const videos = await Video.find(
-    { $text: { $search: q } },
-    { score: { $meta: "textScore" } }
-  )
-    .sort({ score: { $meta: "textScore" } })
-    .populate("channel", "name avatar")
-    .limit(20);
-
-  res.status(200).json({
-    status: "success",
-    results: videos.length,
-    videos
+    videos,
   });
 };
 
@@ -104,19 +79,17 @@ export const getVideoById = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({
       status: "fail",
-      message: "Invalid video id"
+      message: "Invalid video id",
     });
   }
 
-  const video = await Video.findById(id).populate(
-    "channel",
-    "name avatar subscribers"
-  );
+  const video = await Video.findById(id)
+    .populate("channel", "name avatar subscribers");
 
   if (!video) {
     return res.status(404).json({
       status: "fail",
-      message: "Video not found"
+      message: "Video not found",
     });
   }
 
@@ -125,28 +98,8 @@ export const getVideoById = async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    video
+    video,
   });
-};
-export const getChannelById = async (req, res) => {
-  try {
-    const channel = await Channel.findById(req.params.channelId)
-      .populate("owner", "username");
-
-    if (!channel) {
-      return res.status(404).json({ message: "Channel not found" });
-    }
-
-    const videos = await Video.find({ channel: channel._id })
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({
-      channel,
-      videos
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
 /* ================= LIKE VIDEO ================= */
@@ -157,7 +110,7 @@ export const likeVideo = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({
       status: "fail",
-      message: "Invalid video id"
+      message: "Invalid video id",
     });
   }
 
@@ -165,10 +118,11 @@ export const likeVideo = async (req, res) => {
   if (!video) {
     return res.status(404).json({
       status: "fail",
-      message: "Video not found"
+      message: "Video not found",
     });
   }
 
+  // remove dislike
   video.dislikes = video.dislikes.filter(
     uid => uid.toString() !== userId.toString()
   );
@@ -190,7 +144,7 @@ export const likeVideo = async (req, res) => {
   res.status(200).json({
     status: "success",
     likes: video.likes.length,
-    dislikes: video.dislikes.length
+    dislikes: video.dislikes.length,
   });
 };
 
@@ -202,7 +156,7 @@ export const dislikeVideo = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({
       status: "fail",
-      message: "Invalid video id"
+      message: "Invalid video id",
     });
   }
 
@@ -210,10 +164,11 @@ export const dislikeVideo = async (req, res) => {
   if (!video) {
     return res.status(404).json({
       status: "fail",
-      message: "Video not found"
+      message: "Video not found",
     });
   }
 
+  // remove like
   video.likes = video.likes.filter(
     uid => uid.toString() !== userId.toString()
   );
@@ -235,46 +190,6 @@ export const dislikeVideo = async (req, res) => {
   res.status(200).json({
     status: "success",
     likes: video.likes.length,
-    dislikes: video.dislikes.length
+    dislikes: video.dislikes.length,
   });
 };
-
-/* ================= DELETE VIDEO ================= */
-export const deleteVideo = async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user._id;
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({
-      status: "fail",
-      message: "Invalid video id"
-    });
-  }
-
-  const video = await Video.findById(id);
-  if (!video) {
-    return res.status(404).json({
-      status: "fail",
-      message: "Video not found"
-    });
-  }
-
-  //  find channel owned by user
-  const channel = await Channel.findOne({ owner: userId });
-
-  //  correct ownership check
-  if (!channel || video.channel.toString() !== channel._id.toString()) {
-    return res.status(403).json({
-      status: "fail",
-      message: "You are not allowed to delete this video"
-    });
-  }
-
-  await video.deleteOne();
-
-  res.status(200).json({
-    status: "success",
-    message: "Video deleted successfully"
-  });
-};
-

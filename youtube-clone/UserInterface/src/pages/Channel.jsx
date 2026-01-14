@@ -8,7 +8,7 @@ function Channel() {
   const { channelId } = useParams();
 
   const [channel, setChannel] = useState(null);
-  const [videos, setVideos] = useState([]); //  always array
+  const [videos, setVideos] = useState([]);
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -18,20 +18,15 @@ function Channel() {
 
     const fetchChannel = async () => {
       try {
-        /* Fetch channel */
+        
         const res = await api.get(`/channels/${channelId}`);
-        setChannel(res.data);
 
-        /* Fetch videos */
-        const videosRes = await api.get(`/videos?channel=${channelId}`);
-
-        // GUARANTEE videos is always an array
-        setVideos(
-          Array.isArray(videosRes.data) ? videosRes.data : []
-        );
+        
+        setChannel(res.data.channel);
+        setVideos(res.data.videos || []);
       } catch (err) {
         console.error("Fetch channel failed", err);
-        setVideos([]); // safety fallback
+        setVideos([]);
       }
     };
 
@@ -64,7 +59,6 @@ function Channel() {
     <div className="pt-14 max-w-7xl mx-auto">
       {/* ===== CHANNEL HEADER ===== */}
       <div className="flex gap-6 items-center px-6 py-6">
-        {/* Avatar */}
         <div className="w-32 h-32 rounded-full overflow-hidden bg-purple-600 flex items-center justify-center text-white text-6xl font-semibold">
           {channel.avatar ? (
             <img
@@ -77,11 +71,8 @@ function Channel() {
           )}
         </div>
 
-        {/* Info */}
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">
-            {channel.name}
-          </h1>
+          <h1 className="text-3xl font-bold">{channel.name}</h1>
 
           <p className="text-gray-600 mt-1">
             @{channel.handle || "yourhandle"} •{" "}
@@ -93,10 +84,8 @@ function Channel() {
 
           <p className="text-sm text-gray-700 mt-2">
             {channel.description || "More about this channel..."}
-            <span className="font-medium cursor-pointer"> more</span>
           </p>
 
-          {/* Owner buttons */}
           {isOwner && (
             <div className="flex gap-3 mt-4">
               <button className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm font-medium">
@@ -110,41 +99,14 @@ function Channel() {
         </div>
       </div>
 
-      {/* ===== TABS ===== */}
-      <div className="border-b px-6">
-        <ul className="flex gap-8 text-sm font-medium text-gray-600">
-          <li className="pb-3 border-b-2 border-black text-black cursor-pointer">
-            Home
-          </li>
-          <li className="pb-3 hover:text-black cursor-pointer">
-            Videos
-          </li>
-          <li className="pb-3 hover:text-black cursor-pointer">
-            Shorts
-          </li>
-          <li className="pb-3 hover:text-black cursor-pointer">
-            Playlists
-          </li>
-          <li className="pb-3 hover:text-black cursor-pointer">
-            Posts
-          </li>
-        </ul>
-      </div>
-
-      {/* ===== VIDEOS SECTION ===== */}
+      {/* ===== VIDEOS ===== */}
       <div className="px-6 py-6">
-        <h2 className="text-xl font-semibold mb-4">
-          Videos
-        </h2>
+        <h2 className="text-xl font-semibold mb-4">Videos</h2>
 
-        {/* PERMANENT EMPTY STATE */}
         {videos.length === 0 && (
-          <p className="text-gray-500">
-            No videos uploaded yet
-          </p>
+          <p className="text-gray-500">No videos uploaded yet</p>
         )}
 
-        {/*  VIDEO GRID */}
         {videos.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {videos.map((video) => (
