@@ -5,8 +5,7 @@ function ChannelVideoCard({ video, onDelete, onEdit, isOwner }) {
     <div className="relative group">
       <img
         src={
-          video.thumbnail &&
-          video.thumbnail.startsWith("http")
+          video.thumbnail?.startsWith("http")
             ? video.thumbnail
             : "https://i.imgur.com/8Km9tLL.jpg"
         }
@@ -14,18 +13,23 @@ function ChannelVideoCard({ video, onDelete, onEdit, isOwner }) {
         alt={video.title}
       />
 
-      {/* Actions */}
       {isOwner && (
         <div className="absolute top-2 right-2 hidden group-hover:flex gap-2">
           <button
-            onClick={() => onEdit?.(video)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit?.(video);
+            }}
             className="bg-white p-2 rounded-full shadow"
           >
             <FiEdit2 size={14} />
           </button>
 
           <button
-            onClick={() => onDelete(video._id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(video._id);
+            }}
             className="bg-white p-2 rounded-full shadow text-red-600"
           >
             <FiTrash2 size={14} />
@@ -33,9 +37,7 @@ function ChannelVideoCard({ video, onDelete, onEdit, isOwner }) {
         </div>
       )}
 
-      <h3 className="mt-2 text-sm font-medium">
-        {video.title}
-      </h3>
+      <h3 className="mt-2 text-sm font-medium">{video.title}</h3>
     </div>
   );
 }

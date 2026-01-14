@@ -1,53 +1,63 @@
 import { useState, useEffect } from "react";
 import { FiThumbsUp, FiThumbsDown } from "react-icons/fi";
 import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
+import api from "../utils/axios";
 
 function LikeDislike({ videoId, initialLikes = 0 }) {
-  const safeInitialLikes = Number(initialLikes) || 0;
-
+  const [likes, setLikes] = useState(Number(initialLikes) || 0);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
-  const [likes, setLikes] = useState(safeInitialLikes);
+  const [loading, setLoading] = useState(false);
 
+  /* ================= INITIAL USER REACTION ================= */
   useEffect(() => {
-    const saved = localStorage.getItem(`reaction-${videoId}`);
-    if (saved) {
-      const data = JSON.parse(saved);
-      setLiked(!!data.liked);
-      setDisliked(!!data.disliked);
-      setLikes(safeInitialLikes + (data.liked ? 1 : 0));
-    }
-  }, [videoId, safeInitialLikes]);
+    // optional: if later you expose "likedByUser" from backend
+    setLikes(Number(initialLikes) || 0);
+  }, [initialLikes]);
 
-  useEffect(() => {
-    localStorage.setItem(
-      `reaction-${videoId}`,
-      JSON.stringify({ liked, disliked })
-    );
-  }, [liked, disliked, videoId]);
-
-  const handleLike = (e) => {
+  /* ================= LIKE ================= */
+  const handleLike = async (e) => {
     e.stopPropagation();
-    if (liked) {
-      setLiked(false);
-      setLikes((p) => Math.max(0, p - 1));
-    } else {
-      setLiked(true);
-      setLikes((p) => p + 1);
-      if (disliked) setDisliked(false);
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      // optimistic UI
+      setLiked((prev) => !prev);
+      setDisliked(false);
+      setLikes((prev) => (liked ? prev - 1 : prev + 1));
+
+      const res = await api.post(`/videos/${videoId}/like`);
+
+      setLikes(res.data.likes);
+    } catch (err) {
+      console.error("Like failed", err.response?.data);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDislike = (e) => {
+  /* ================= DISLIKE ================= */
+  const handleDislike = async (e) => {
     e.stopPropagation();
-    if (disliked) {
-      setDisliked(false);
-    } else {
-      setDisliked(true);
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      // optimistic UI
+      setDisliked((prev) => !prev);
       if (liked) {
         setLiked(false);
-        setLikes((p) => Math.max(0, p - 1));
+        setLikes((prev) => Math.max(0, prev - 1));
       }
+
+      await api.post(`/videos/${videoId}/dislike`);
+    } catch (err) {
+      console.error("Dislike failed", err.response?.data);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,7 +69,8 @@ function LikeDislike({ videoId, initialLikes = 0 }) {
       {/* LIKE */}
       <button
         onClick={handleLike}
-        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-300"
+        disabled={loading}
+        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-300 disabled:opacity-50"
       >
         {liked ? (
           <FaThumbsUp className="text-black text-lg" />
@@ -77,7 +88,8 @@ function LikeDislike({ videoId, initialLikes = 0 }) {
       {/* DISLIKE */}
       <button
         onClick={handleDislike}
-        className="px-4 py-2 hover:bg-gray-300"
+        disabled={loading}
+        className="px-4 py-2 hover:bg-gray-300 disabled:opacity-50"
       >
         {disliked ? (
           <FaThumbsDown className="text-black text-lg" />

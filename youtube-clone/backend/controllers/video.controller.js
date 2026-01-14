@@ -193,3 +193,65 @@ export const dislikeVideo = async (req, res) => {
     dislikes: video.dislikes.length,
   });
 };
+/* ================= DELETE VIDEO ================= */
+export const deleteVideo = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid video id" });
+  }
+
+  const video = await Video.findById(id);
+  if (!video) {
+    return res.status(404).json({ message: "Video not found" });
+  }
+
+  // check ownership
+  const channel = await Channel.findById(video.channel);
+  if (!channel || channel.owner.toString() !== userId.toString()) {
+    return res.status(403).json({ message: "Not allowed to delete video" });
+  }
+
+  // delete comments first (important)
+  await Comment.deleteMany({ video: video._id });
+
+  // delete video
+  await video.deleteOne();
+
+  res.status(200).json({
+    status: "success",
+    message: "Video deleted successfully",
+  });
+};
+/* ================= UPDATE VIDEO ================= */
+export const updateVideo = async (req, res) => {
+  const { id } = req.params;
+  const { title, description } = req.body;
+  const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid video id" });
+  }
+
+  const video = await Video.findById(id);
+  if (!video) {
+    return res.status(404).json({ message: "Video not found" });
+  }
+
+  // ownership check
+  const channel = await Channel.findById(video.channel);
+  if (!channel || channel.owner.toString() !== userId.toString()) {
+    return res.status(403).json({ message: "Not allowed to edit video" });
+  }
+
+  if (title !== undefined) video.title = title;
+  if (description !== undefined) video.description = description;
+
+  await video.save();
+
+  res.status(200).json({
+    status: "success",
+    video,
+  });
+};
