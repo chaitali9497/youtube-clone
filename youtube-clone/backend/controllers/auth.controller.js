@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Channel from "../models/Channel.js"; 
 import jwt from "jsonwebtoken";
 import checkRequiredFields from "../utils/requiredFields.js";
 
@@ -11,16 +12,15 @@ const signToken = (id) =>
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
 
-  //check missing fields
   const missingFields = checkRequiredFields({ name, email, password });
-
   if (missingFields.length > 0) {
     return res.status(400).json({
       status: "fail",
       message: `Missing fields: ${missingFields.join(", ")}`
     });
   }
-   if (password.length < 6) {
+
+  if (password.length < 6) {
     return res.status(400).json({
       status: "fail",
       message: "Password must be at least 6 characters"
@@ -45,6 +45,7 @@ export const register = async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      channel: null
     }
   });
 };
@@ -53,9 +54,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  //check missing fields
   const missingFields = checkRequiredFields({ email, password });
-
   if (missingFields.length > 0) {
     return res.status(400).json({
       status: "fail",
@@ -64,7 +63,6 @@ export const login = async (req, res) => {
   }
 
   const user = await User.findOne({ email }).select("+password");
-
   if (!user || !(await user.comparePassword(password))) {
     return res.status(401).json({
       status: "fail",
@@ -74,6 +72,9 @@ export const login = async (req, res) => {
 
   const token = signToken(user._id);
 
+  //  FETCH USER CHANNEL
+  const channel = await Channel.findOne({ owner: user._id });
+
   res.status(200).json({
     status: "success",
     token,
@@ -81,22 +82,13 @@ export const login = async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      channel: channel
+        ? {
+            _id: channel._id,
+            name: channel.name,
+            avatar: channel.avatar
+          }
+        : null
     }
   });
 };
-const channel = await Channel.findOne({ owner: user._id });
-
-res.status(200).json({
-  user: {
-    ...user._doc,
-    channel: channel
-      ? {
-          _id: channel._id,
-          name: channel.name,
-          avatar: channel.avatar
-        }
-      : null
-  },
-  token
-});
-

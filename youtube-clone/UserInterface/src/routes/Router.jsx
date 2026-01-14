@@ -23,7 +23,7 @@ const withSuspense = (Component) => (
 
 const router = createBrowserRouter([
   {
-    element: <Main />, 
+    element: <Main />,
     errorElement: withSuspense(ErrorPage),
     children: [
       {
@@ -35,17 +35,17 @@ const router = createBrowserRouter([
         element: withSuspense(Watch),
       },
       {
-        path: "/create-channel",
+        path: "create-channel",
         element: withSuspense(CreateChannel),
       },
       {
-        path: "/channel/:id",
+        path: "channel/:channelId",
         element: withSuspense(Channel),
-      }
+      },
     ],
   },
   {
-    element: <Auth />, 
+    element: <Auth />,
     children: [
       {
         path: "create-account",
@@ -58,5 +58,6 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 
 export default router;

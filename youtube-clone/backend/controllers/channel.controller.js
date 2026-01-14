@@ -32,6 +32,18 @@ export const getChannelById = async (req, res) => {
   }
 };
 export const getMyChannel = async (req, res) => {
-  const channel = await Channel.findOne({ owner: req.user.id });
-  res.json(channel);
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const channel = await Channel.findOne({ owner: req.user.id });
+
+    // return null if no channel (NOT error)
+    res.status(200).json(channel);
+  } catch (error) {
+    console.error("getMyChannel error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
+
