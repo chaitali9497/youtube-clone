@@ -25,7 +25,7 @@ export const addComment = async (req, res) => {
     text,
     video: videoId,
     user: req.user._id,
-    likes: [], // ✅ array
+    likes: [], 
   });
 
   //  increase comment count
