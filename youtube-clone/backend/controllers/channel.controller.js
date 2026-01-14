@@ -12,11 +12,48 @@ export const createChannel = async (req, res) => {
       owner: req.user.id
     });
 
-    res.status(201).json(channel);
+  const defaultVideos = await Video.insertMany([
+      {
+        title: "Welcome to my channel 🎉",
+        description: "This is my first video on this channel.",
+        videoUrl:
+          "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4",
+        thumbnail:
+          "https://via.placeholder.com/320x180?text=Welcome+Video",
+        channel: channel._id,
+        views: 0,
+        likes: [],
+        dislikes: [],
+        commentsCount: 0,
+      },
+      {
+        title: "Channel Introduction 📢",
+        description: "Let me introduce what this channel is about.",
+        videoUrl:
+          "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4",
+        thumbnail:
+          "https://via.placeholder.com/320x180?text=Intro+Video",
+        channel: channel._id,
+        views: 0,
+        likes: [],
+        dislikes: [],
+        commentsCount: 0,
+      },
+    ]);
+
+    res.status(201).json({
+      status: "success",
+      channel,
+      videos: defaultVideos,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("createChannel error:", error);
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
+
 export const getChannelById = async (req, res) => {
   try {
     const channel = await Channel.findById(req.params.channelId)

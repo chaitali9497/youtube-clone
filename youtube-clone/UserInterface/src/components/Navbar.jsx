@@ -90,10 +90,13 @@ function Navbar({ toggleSidebar }) {
 
           {isLoggedIn && (
             <>
-              <button className="hidden sm:flex items-center gap-1 px-3 py-1.5 border rounded-full hover:bg-gray-100">
-                <FiPlus />
-                <span className="text-sm">Create</span>
-              </button>
+             <button
+  onClick={() => navigate("/upload")}
+  className="hidden sm:flex items-center gap-1 px-3 py-1.5 border rounded-full hover:bg-gray-100"
+>
+  <FiPlus />
+  <span className="text-sm">Create</span>
+</button>
 
               <button className="relative p-2 rounded-full hover:bg-gray-100">
                 <FiBell className="text-xl" />

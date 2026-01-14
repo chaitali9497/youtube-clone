@@ -12,39 +12,57 @@ export const uploadVideo = async (req, res) => {
   if (!title || !videoUrl || !thumbnail) {
     return res.status(400).json({
       status: "fail",
-      message: "Missing required fields"
+      message: "Missing required fields",
     });
   }
 
-  //  FIND USER CHANNEL
+  // FIND USER CHANNEL
   const channel = await Channel.findOne({ owner: req.user._id });
 
   if (!channel) {
     return res.status(400).json({
       status: "fail",
-      message: "User does not have a channel"
+      message: "User does not have a channel",
     });
   }
 
-  //  CREATE VIDEO WITH CHANNEL ID
+  // CREATE VIDEO WITH CHANNEL ID
   const video = await Video.create({
     title,
     description,
     videoUrl,
     thumbnail,
-    channel: channel._id
+    channel: channel._id,
   });
+
+  // CREATE 2 DEFAULT COMMENTS FOR THIS VIDEO
+  await Comment.insertMany([
+    {
+      text: "Great video! 🔥",
+      video: video._id,
+      user: req.user._id, // channel owner
+      likes: 0,
+    },
+    {
+      text: "Thanks for watching 😊",
+      video: video._id,
+      user: req.user._id,
+      likes: 0,
+    },
+  ]);
 
   res.status(201).json({
     status: "success",
-    video
+    video,
   });
 };
+
 
 /* ================= GET ALL VIDEOS ================= */
 export const getAllVideos = async (req, res) => {
  const videos = await Video.find()
   .populate("channel", "name avatar subscribers");
+  
 
   res.status(200).json({
     status: "success",

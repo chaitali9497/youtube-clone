@@ -14,6 +14,7 @@ const Login = lazy(() => import("../pages/Login"));
 const ErrorPage = lazy(() => import("../pages/Error"));
 const CreateChannel = lazy(() => import("../pages/CreateChannel"));
 const Channel = lazy(() => import("../pages/Channel"));
+import UploadVideo from "../pages/UploadVideo";
 
 const withSuspense = (Component) => (
   <Suspense fallback={<Loader />}>
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
       {
         path: "channel/:channelId",
         element: withSuspense(Channel),
+      },
+      {
+        path: "/upload",
+        element: <UploadVideo />,
       },
     ],
   },
