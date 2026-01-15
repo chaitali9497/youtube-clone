@@ -18,15 +18,31 @@ function Sidebar({ isOpen }) {
 
   return (
     <aside
-      className={`fixed top-14 left-0 h-[calc(100vh-56px)] bg-white 
-      overflow-y-auto transition-all duration-300 sidebar-scroll
-      ${isOpen ? "w-60" : "w-20"}`}
+      className="
+        fixed top-14 left-0 z-50
+        h-[calc(100vh-56px)]
+        bg-white overflow-y-auto
+        transition-all duration-300
+        sidebar-scroll
+      "
     >
-      {isOpen ? (
-        <FullSidebar isLoggedIn={isLoggedIn} />
-      ) : (
-        <MiniSidebar isLoggedIn={isLoggedIn} />
-      )}
+      {/* ===== MOBILE ===== */}
+      <div className="md:hidden ">
+        {isOpen && <FullSidebar isLoggedIn={isLoggedIn} />}
+      </div>
+
+      {/* ===== DESKTOP ===== */}
+      <div className="hidden md:block">
+        {isOpen ? (
+          <div className="w-60">
+            <FullSidebar isLoggedIn={isLoggedIn} />
+          </div>
+        ) : (
+          <div className="w-20">
+            <MiniSidebar isLoggedIn={isLoggedIn} />
+          </div>
+        )}
+      </div>
     </aside>
   );
 }
@@ -40,23 +56,31 @@ function MiniSidebar({ isLoggedIn }) {
 
   return (
     <div className="flex flex-col items-center gap-6 py-4">
-      <MiniItem icon={<FiHome />} label="Home" />
+      <MiniItem icon={<FiHome />} label="Home" onClick={() => navigate("/")} />
       <MiniItem icon={<SiYoutubeshorts />} label="Shorts" />
       <MiniItem icon={<MdOutlineSubscriptions />} label="Subscriptions" />
 
-      {/*  Show Sign in ONLY if not logged in */}
       {!isLoggedIn && (
-        <div onClick={() => navigate("/login")}>
-          <MiniItem icon={<BiUserCircle className="text-xl" />} label="Sign in" />
-        </div>
+        <MiniItem
+          icon={<BiUserCircle className="text-xl" />}
+          label="Sign in"
+          onClick={() => navigate("/login")}
+        />
       )}
     </div>
   );
 }
 
-function MiniItem({ icon, label }) {
+function MiniItem({ icon, label, onClick }) {
   return (
-    <div className="flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg">
+    <div
+      onClick={onClick}
+      className="
+        hidden md:flex
+        flex-col items-center gap-1 cursor-pointer
+        hover:bg-gray-100 px-3 py-2 rounded-lg
+      "
+    >
       <span className="text-2xl text-gray-700">{icon}</span>
       <span className="text-xs">{label}</span>
     </div>
@@ -71,11 +95,10 @@ function FullSidebar({ isLoggedIn }) {
   return (
     <>
       <Section>
-        <Item icon={<FiHome />} label="Home" active />
+        <Item icon={<FiHome />} label="Home" onClick={() => navigate("/")} />
         <Item icon={<SiYoutubeshorts />} label="Shorts" />
         <Item icon={<MdOutlineSubscriptions />} label="Subscriptions" />
 
-        {/* Show You & History ONLY if logged in */}
         {isLoggedIn && (
           <>
             <Item icon={<BiUserCircle />} label="You" />
@@ -86,7 +109,6 @@ function FullSidebar({ isLoggedIn }) {
 
       <Divider />
 
-    {/*  Show Sign in ONLY if not logged in */}
       {!isLoggedIn && (
         <>
           <div className="px-4 py-3 text-sm text-gray-700">
@@ -95,13 +117,12 @@ function FullSidebar({ isLoggedIn }) {
 
             <button
               onClick={() => navigate("/login")}
-              className="mt-3 flex items-center gap-2 px-4 py-1.5 border border-gray-300 rounded-full text-blue-600 hover:bg-gray-100"
+              className="mt-3 flex items-center gap-2 px-4 py-1.5 border rounded-full text-blue-600 hover:bg-gray-100"
             >
               <BiUserCircle className="text-xl" />
               Sign in
             </button>
           </div>
-
           <Divider />
         </>
       )}
@@ -115,18 +136,9 @@ function FullSidebar({ isLoggedIn }) {
       <Divider />
 
       <Section title="More from YouTube">
-        <Item
-          icon={<FaYoutube className="text-red-600" />}
-          label="YouTube Premium"
-        />
-        <Item
-          icon={<BsPlayBtn className="text-red-600" />}
-          label="YouTube Music"
-        />
-        <Item
-          icon={<FaYoutube className="text-red-600" />}
-          label="YouTube Kids"
-        />
+        <Item icon={<FaYoutube className="text-red-600" />} label="YouTube Premium" />
+        <Item icon={<BsPlayBtn className="text-red-600" />} label="YouTube Music" />
+        <Item icon={<FaYoutube className="text-red-600" />} label="YouTube Kids" />
       </Section>
 
       <Divider />
@@ -136,17 +148,11 @@ function FullSidebar({ isLoggedIn }) {
         <Item icon={<FiFlag />} label="Report history" />
         <Item icon={<FiHelpCircle />} label="Help" />
       </Section>
-
-      <div className="px-4 py-4 text-xs text-gray-500 space-y-2">
-        <p>About · Press · Copyright · Contact us · Creators · Advertise · Developers</p>
-        <p>Terms · Privacy · Policy & Safety · How YouTube works · Test new features</p>
-        <p>© 2026 Google LLC</p>
-      </div>
     </>
   );
 }
 
-/* ================= REUSABLE COMPONENTS ================= */
+/* ================= REUSABLE ================= */
 
 function Section({ title, children }) {
   return (
@@ -161,11 +167,11 @@ function Section({ title, children }) {
   );
 }
 
-function Item({ icon, label, active }) {
+function Item({ icon, label, onClick }) {
   return (
     <div
-      className={`flex items-center gap-4 px-4 py-2 rounded-lg cursor-pointer
-      ${active ? "bg-gray-100 font-medium" : "hover:bg-gray-100"}`}
+      onClick={onClick}
+      className="flex items-center gap-4 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-100"
     >
       <span className="text-xl text-gray-700">{icon}</span>
       <span className="text-sm">{label}</span>

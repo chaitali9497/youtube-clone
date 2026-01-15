@@ -14,7 +14,6 @@ export const uploadVideo = async (req, res) => {
     });
   }
 
-  // find channel via JWT user
   const channel = await Channel.findOne({ owner: req.user._id });
   if (!channel) {
     return res.status(400).json({
@@ -23,7 +22,6 @@ export const uploadVideo = async (req, res) => {
     });
   }
 
-  // create video
   const video = await Video.create({
     title,
     description,
@@ -33,7 +31,6 @@ export const uploadVideo = async (req, res) => {
     commentsCount: 0,
   });
 
-  // default comments
   await Comment.insertMany([
     {
       text: "Great video! 🔥",
@@ -83,8 +80,10 @@ export const getVideoById = async (req, res) => {
     });
   }
 
-  const video = await Video.findById(id)
-    .populate("channel", "name avatar subscribers");
+  const video = await Video.findById(id).populate(
+    "channel",
+    "name avatar subscribers"
+  );
 
   if (!video) {
     return res.status(404).json({
@@ -93,12 +92,22 @@ export const getVideoById = async (req, res) => {
     });
   }
 
-  video.views += 1;
-  await video.save();
+  // increment views atomically
+  await Video.findByIdAndUpdate(id, { $inc: { views: 1 } });
+
+  const userId = req.user?._id;
 
   res.status(200).json({
     status: "success",
     video,
+    likes: video.likes.length,
+    dislikes: video.dislikes.length,
+    likedByUser: userId
+      ? video.likes.some(uid => uid.toString() === userId.toString())
+      : false,
+    dislikedByUser: userId
+      ? video.dislikes.some(uid => uid.toString() === userId.toString())
+      : false,
   });
 };
 
@@ -122,29 +131,37 @@ export const likeVideo = async (req, res) => {
     });
   }
 
-  // remove dislike
-  video.dislikes = video.dislikes.filter(
-    uid => uid.toString() !== userId.toString()
-  );
-
   const alreadyLiked = video.likes.some(
     uid => uid.toString() === userId.toString()
   );
 
+  let updatedVideo;
+
   if (alreadyLiked) {
-    video.likes = video.likes.filter(
-      uid => uid.toString() !== userId.toString()
+    // UNLIKE
+    updatedVideo = await Video.findByIdAndUpdate(
+      id,
+      { $pull: { likes: userId } },
+      { new: true }
     );
   } else {
-    video.likes.push(userId);
+    // LIKE
+    updatedVideo = await Video.findByIdAndUpdate(
+      id,
+      {
+        $addToSet: { likes: userId },
+        $pull: { dislikes: userId },
+      },
+      { new: true }
+    );
   }
-
-  await video.save();
 
   res.status(200).json({
     status: "success",
-    likes: video.likes.length,
-    dislikes: video.dislikes.length,
+    likes: updatedVideo.likes.length,
+    dislikes: updatedVideo.dislikes.length,
+    likedByUser: !alreadyLiked,
+    dislikedByUser: false,
   });
 };
 
@@ -168,31 +185,40 @@ export const dislikeVideo = async (req, res) => {
     });
   }
 
-  // remove like
-  video.likes = video.likes.filter(
-    uid => uid.toString() !== userId.toString()
-  );
-
   const alreadyDisliked = video.dislikes.some(
     uid => uid.toString() === userId.toString()
   );
 
+  let updatedVideo;
+
   if (alreadyDisliked) {
-    video.dislikes = video.dislikes.filter(
-      uid => uid.toString() !== userId.toString()
+    // REMOVE DISLIKE
+    updatedVideo = await Video.findByIdAndUpdate(
+      id,
+      { $pull: { dislikes: userId } },
+      { new: true }
     );
   } else {
-    video.dislikes.push(userId);
+    // DISLIKE
+    updatedVideo = await Video.findByIdAndUpdate(
+      id,
+      {
+        $addToSet: { dislikes: userId },
+        $pull: { likes: userId },
+      },
+      { new: true }
+    );
   }
-
-  await video.save();
 
   res.status(200).json({
     status: "success",
-    likes: video.likes.length,
-    dislikes: video.dislikes.length,
+    likes: updatedVideo.likes.length,
+    dislikes: updatedVideo.dislikes.length,
+    likedByUser: false,
+    dislikedByUser: !alreadyDisliked,
   });
 };
+
 /* ================= DELETE VIDEO ================= */
 export const deleteVideo = async (req, res) => {
   const { id } = req.params;
@@ -207,16 +233,12 @@ export const deleteVideo = async (req, res) => {
     return res.status(404).json({ message: "Video not found" });
   }
 
-  // check ownership
   const channel = await Channel.findById(video.channel);
   if (!channel || channel.owner.toString() !== userId.toString()) {
     return res.status(403).json({ message: "Not allowed to delete video" });
   }
 
-  // delete comments first (important)
   await Comment.deleteMany({ video: video._id });
-
-  // delete video
   await video.deleteOne();
 
   res.status(200).json({
@@ -224,6 +246,7 @@ export const deleteVideo = async (req, res) => {
     message: "Video deleted successfully",
   });
 };
+
 /* ================= UPDATE VIDEO ================= */
 export const updateVideo = async (req, res) => {
   const { id } = req.params;
@@ -239,7 +262,6 @@ export const updateVideo = async (req, res) => {
     return res.status(404).json({ message: "Video not found" });
   }
 
-  // ownership check
   const channel = await Channel.findById(video.channel);
   if (!channel || channel.owner.toString() !== userId.toString()) {
     return res.status(403).json({ message: "Not allowed to edit video" });
