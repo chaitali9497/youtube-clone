@@ -1,33 +1,35 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/axios";
+import AlertBox from "../components/AlertBox";
+import Avatar from "../components/Avatar";
 
 function CreateChannel() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // ✅ redirect if channel already exists
+  /* ================= REDIRECT IF CHANNEL EXISTS ================= */
   useEffect(() => {
     const redirectIfChannelExists = async () => {
       try {
         const res = await api.get("/channels/me");
-
-        if (res.data?._id) {
-          navigate(`/channel/${res.data._id}`, { replace: true });
+        if (res.data?.channel?._id) {
+          navigate(`/channel/${res.data.channel._id}`, { replace: true });
         }
       } catch {
-        // no channel → stay on create page
+        // no channel → stay here
       }
     };
 
     redirectIfChannelExists();
   }, [navigate]);
 
-  // ✅ avatar handler (was missing)
+  /* ================= AVATAR PREVIEW ================= */
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -35,16 +37,24 @@ function CreateChannel() {
     setPreview(URL.createObjectURL(file));
   };
 
-  // ✅ create channel
+  /* ================= CREATE CHANNEL ================= */
   const handleCreate = async () => {
-    if (!name || loading) return;
+    setError("");
 
-    setLoading(true);
+    if (!name.trim()) {
+      setError("Channel name is required");
+      return;
+    }
+
+    if (loading) return;
+
     try {
+      setLoading(true);
+
       const res = await api.post("/channels", {
-        name,
+        name: name.trim(),
         description,
-        avatar: preview
+        avatar: preview,
       });
 
       const user = JSON.parse(localStorage.getItem("user"));
@@ -53,14 +63,15 @@ function CreateChannel() {
         "user",
         JSON.stringify({
           ...user,
-          channel: res.data
+          channel: res.data.channel,
         })
       );
 
-      navigate(`/channel/${res.data._id}`);
+      navigate(`/channel/${res.data.channel._id}`);
     } catch (err) {
-      alert(err.response?.data?.message || "Channel creation failed");
-    } finally {
+      setError(
+        err.response?.data?.message || "Channel creation failed"
+      );
       setLoading(false);
     }
   };
@@ -68,10 +79,19 @@ function CreateChannel() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="w-full max-w-md border rounded-xl p-6 shadow-sm">
-        <h1 className="text-xl font-semibold mb-1">How you’ll appear</h1>
+        <h1 className="text-xl font-semibold mb-1">
+          How you’ll appear
+        </h1>
         <p className="text-sm text-gray-500 mb-6">
           Your channel profile appears across YouTube.
         </p>
+
+        {/* ALERT */}
+        <AlertBox
+          type="error"
+          message={error}
+          onClose={() => setError("")}
+        />
 
         {/* AVATAR */}
         <div className="flex flex-col items-center mb-6">
@@ -83,39 +103,38 @@ function CreateChannel() {
               onChange={handleAvatarChange}
             />
 
-            {preview ? (
-              <img
-                src={preview}
-                alt="avatar"
-                className="w-24 h-24 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-3xl">
-                👤
-              </div>
-            )}
+            <Avatar
+              name={name || "Channel"}
+              src={preview}
+              size={96}
+            />
           </label>
-
-          <span className="text-sm text-blue-600 mt-2">
-            Select picture
-          </span>
         </div>
 
-        {/* NAME */}
+        {/* CHANNEL NAME */}
         <div className="mb-4">
-          <label className="text-sm font-medium">Channel name</label>
+          <label className="text-sm font-medium">
+            Channel name
+          </label>
           <input
             type="text"
             placeholder="Your channel name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full mt-1 px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => {
+              setName(e.target.value);
+              setError("");
+            }}
+            className={`w-full mt-1 px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500 ${
+              error ? "border-red-500" : ""
+            }`}
           />
         </div>
 
         {/* DESCRIPTION */}
         <div className="mb-6">
-          <label className="text-sm font-medium">Description</label>
+          <label className="text-sm font-medium">
+            Description
+          </label>
           <textarea
             placeholder="Tell viewers about your channel"
             value={description}

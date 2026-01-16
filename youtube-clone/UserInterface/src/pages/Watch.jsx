@@ -2,12 +2,15 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../utils/axios";
 import { FiShare2, FiMoreHorizontal } from "react-icons/fi";
+import ShareModal from "../components/ShareModal";
 
 import Comments from "../components/Comments";
 import VideoPlayer from "../components/VideoPlayer";
 import RecommendedVideoCard from "../components/RecommendedVideoCard";
 import LikeDislike from "../components/LikeDislike";
 import Loader from "../components/Loader";
+import Avatar, { getAvatarFromName } from "../components/Avatar";
+
 
 function Watch() {
   const { id } = useParams();
@@ -15,6 +18,8 @@ function Watch() {
   const [video, setVideo] = useState(null);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openShare, setOpenShare] = useState(false);
+
 
   /* ================= FETCH CURRENT VIDEO ================= */
   useEffect(() => {
@@ -45,7 +50,7 @@ function Watch() {
     };
 
     fetchRecommended();
-  }, [id]); // 👈 refetch on video change
+  }, [id]); 
 
   /* ================= SCROLL TO TOP ================= */
   useEffect(() => {
@@ -90,25 +95,30 @@ function Watch() {
 
           {/* CHANNEL + ACTIONS */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
-            {/* CHANNEL */}
-            <Link
-              to={`/channel/${video.channel?._id}`}
-              className="flex items-center gap-3"
-            >
-              <img
-                src={video.channel?.avatar || "/default-avatar.png"}
-                alt={video.channel?.name}
-                className="w-10 h-10 rounded-full"
-              />
-              <div>
-                <p className="font-semibold">
-                  {video.channel?.name || "Unknown Channel"}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {video.channel?.subscribers || 0} subscribers
-                </p>
-              </div>
-            </Link>
+           {/* CHANNEL */}
+<Link
+  to={`/channel/${video.channel?._id}`}
+  className="flex items-center gap-3"
+>
+  <Avatar
+    name={video.channel?.name || "Channel"}
+    src={
+      video.channel?.avatar ||
+      getAvatarFromName(video.channel?.name || "Channel")
+    }
+    size={40}
+  />
+
+  <div>
+    <p className="font-semibold">
+      {video.channel?.name || "Unknown Channel"}
+    </p>
+    <p className="text-xs text-gray-500">
+      {video.channel?.subscribers || 0} subscribers
+    </p>
+  </div>
+</Link>
+
 
             {/* ACTIONS */}
             <div className="flex gap-3 flex-wrap">
@@ -117,9 +127,13 @@ function Watch() {
                 initialLikes={video.likes?.length || 0}
               />
 
-              <button className="flex items-center gap-1 px-4 py-2 bg-gray-200 rounded-full">
-                <FiShare2 /> Share
-              </button>
+            <button
+  onClick={() => setOpenShare(true)}
+  className="flex items-center gap-1 px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300"
+>
+  <FiShare2 /> Share
+</button>
+
 
               <button className="p-2 bg-gray-200 rounded-full">
                 <FiMoreHorizontal />
@@ -155,6 +169,13 @@ function Watch() {
           ))}
         </div>
       </div>
+      <ShareModal
+  open={openShare}
+  onClose={() => setOpenShare(false)}
+  url={window.location.href}
+  title={video.title}
+/>
+
     </div>
   );
 }

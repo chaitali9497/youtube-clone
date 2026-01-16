@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../utils/axios";
 import FilterBar from "../components/FilterBar";
 import Loader from "../components/Loader";
+import Avatar, { getAvatarFromName } from "../components/Avatar";
 
 function Home() {
   const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -17,6 +18,8 @@ function Home() {
 
   const searchQuery = searchParams.get("q")?.toLowerCase() || "";
 
+  const shouldShowContent = isLoggedIn || searchQuery;
+
   /* ================= FETCH VIDEOS ================= */
   useEffect(() => {
     let mounted = true;
@@ -24,29 +27,33 @@ function Home() {
     const fetchVideos = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/videos?limit=12");
+        const url = searchQuery
+          ? `/videos?search=${searchQuery}`
+          : `/videos?limit=12`;
+
+        const res = await api.get(url);
 
         if (mounted) {
           setVideos(res.data?.videos || res.data || []);
         }
-      } catch (err) {
-        if (mounted) {
-          setError("Failed to load videos");
-        }
+      } catch {
+        if (mounted) setError("Failed to load videos");
       } finally {
         if (mounted) setLoading(false);
       }
     };
 
-    fetchVideos();
+    if (shouldShowContent) {
+      fetchVideos();
+    }
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [shouldShowContent, searchQuery]);
 
-  /* ================= AUTH EMPTY STATE ================= */
-  if (!isLoggedIn) {
+  /* ================= EMPTY STATE (GUEST ONLY) ================= */
+  if (!shouldShowContent) {
     return (
       <div className="flex justify-center pt-10">
         <div className="bg-white border rounded-xl px-10 py-8 text-center max-w-xl shadow">
@@ -81,26 +88,24 @@ function Home() {
   /* ================= UI ================= */
   return (
     <>
+      {/*  FILTER BAR SHOWN FOR SEARCH + LOGGED IN */}
       <FilterBar
         activeFilter={activeFilter}
         setActiveFilter={setActiveFilter}
       />
 
-      {/* ERROR */}
       {error && (
         <p className="text-center text-red-500 my-6">
           {error}
         </p>
       )}
 
-      {/* LOADER (non-blocking) */}
       {loading && (
         <div className="flex justify-center my-6">
           <Loader />
         </div>
       )}
 
-      {/* VIDEOS GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6">
         {filteredVideos.length > 0 ? (
           filteredVideos.map(video => (
@@ -141,11 +146,15 @@ function Home() {
 
               {/* INFO */}
               <div className="flex gap-3 mt-3">
-                <img
-                  src={video.channel?.avatar || "/default-avatar.png"}
-                  alt={video.channel?.name}
-                  loading="lazy"
-                  className="w-9 h-9 rounded-full"
+                <Avatar
+                  name={video.channel?.name || "Channel"}
+                  src={
+                    video.channel?.avatar ||
+                    getAvatarFromName(
+                      video.channel?.name || "Channel"
+                    )
+                  }
+                  size={36}
                 />
 
                 <div>

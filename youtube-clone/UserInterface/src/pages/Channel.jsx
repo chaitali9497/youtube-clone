@@ -3,6 +3,9 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import api from "../utils/axios";
 import ChannelVideoCard from "../components/ChannelVideoCard";
 import Loader from "../components/Loader";
+import EditVideoModal from "../components/EditVideoModal";
+import Snackbar from "../components/Snackbar";
+import Avatar, { getAvatarFromName } from "../components/Avatar";
 
 function Channel() {
   const { channelId } = useParams();
@@ -11,10 +14,16 @@ function Channel() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Home");
+  const [editingVideo, setEditingVideo] = useState(null);
+  const [snackbar, setSnackbar] = useState({ message: "", type: "success" });
 
   const tabsRef = useRef(null);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  /* ================= NORMALIZE USER ================= */
+  const rawUser = JSON.parse(localStorage.getItem("user"));
+  const user = rawUser
+    ? { ...rawUser, _id: rawUser._id || rawUser.id }
+    : null;
 
   /* ================= FETCH CHANNEL + VIDEOS ================= */
   useEffect(() => {
@@ -23,8 +32,27 @@ function Channel() {
     const fetchChannel = async () => {
       try {
         setLoading(true);
+
         const res = await api.get(`/channels/${channelId}`);
-        setChannel(res.data.channel);
+        const raw = res.data.channel;
+
+        /* ===== CORRECT NORMALIZATION ===== */
+        const normalizedChannel = {
+          id: raw._id,
+          name: raw.name,
+          description: raw.description,
+          banner: raw.banner || null,
+          subscribers: raw.subscribers || 0,
+          avatar: raw.avatar || getAvatarFromName(raw.name),
+          owner: {
+            _id:
+              typeof raw.owner === "object"
+                ? raw.owner._id || raw.owner.id
+                : raw.owner,
+          },
+        };
+
+        setChannel(normalizedChannel);
         setVideos(res.data.videos || []);
       } catch (err) {
         console.error("Fetch channel failed", err);
@@ -36,77 +64,107 @@ function Channel() {
     fetchChannel();
   }, [channelId]);
 
+  /* ================= AUTO HIDE SNACKBAR ================= */
+  useEffect(() => {
+    if (!snackbar.message) return;
+    const t = setTimeout(
+      () => setSnackbar({ message: "", type: "success" }),
+      3000
+    );
+    return () => clearTimeout(t);
+  }, [snackbar.message]);
+
   /* ================= OWNER CHECK ================= */
   const isOwner = useMemo(() => {
-    if (!user || !channel) return false;
-    return user._id === channel.owner?._id;
+    if (!user?._id || !channel?.owner?._id) return false;
+    return String(user._id) === String(channel.owner._id);
   }, [user, channel]);
+
+  /* ================= DELETE VIDEO ================= */
+  const handleDelete = (id) => {
+    if (!isOwner) return;
+
+    setSnackbar({
+      message: "Delete this video?",
+      type: "error",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await api.delete(`/videos/${id}`);
+            setVideos((prev) => prev.filter((v) => v._id !== id));
+            setSnackbar({ message: "Video deleted", type: "success" });
+          } catch {
+            setSnackbar({ message: "Delete failed", type: "error" });
+          }
+        },
+      },
+    });
+  };
+
+  /* ================= EDIT VIDEO ================= */
+  const handleEdit = (video) => {
+    if (!isOwner) return;
+    setEditingVideo(video);
+  };
+
+  const handleSaveEdit = async (id, updatedData) => {
+    try {
+      const cleanData = Object.fromEntries(
+        Object.entries(updatedData).filter(
+          ([_, value]) => value !== undefined && value !== ""
+        )
+      );
+
+      const res = await api.patch(`/videos/${id}`, cleanData);
+
+      setVideos((prev) =>
+        prev.map((v) => (v._id === id ? res.data.video : v))
+      );
+
+      setEditingVideo(null);
+      setSnackbar({ message: "Video updated", type: "success" });
+    } catch (err) {
+      setSnackbar({
+        message: err.response?.data?.message || "Update failed",
+        type: "error",
+      });
+    }
+  };
 
   /* ================= LOADING ================= */
   if (loading || !channel) return <Loader />;
 
-  /* ================= DELETE VIDEO ================= */
-  const handleDelete = async (id) => {
-    if (!isOwner) return;
-    if (!window.confirm("Delete this video?")) return;
-
-    try {
-      await api.delete(`/videos/${id}`);
-      setVideos((prev) => prev.filter((v) => v._id !== id));
-    } catch {
-      alert("Delete failed");
-    }
-  };
-
-  /* ================= TAB SCROLL ================= */
-  const scrollTabs = () => {
-    tabsRef.current?.scrollBy({
-      left: 120,
-      behavior: "smooth",
-    });
-  };
-
   return (
     <div className="pt-14 max-w-7xl mx-auto">
       {/* ===== CHANNEL HEADER ===== */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6">
-        {/* Avatar */}
-        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-purple-600 flex items-center justify-center text-white text-4xl sm:text-6xl font-semibold">
-          {channel.avatar ? (
-            <img
-              src={channel.avatar}
-              alt="avatar"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            channel.name?.[0]
-          )}
-        </div>
+      <div className="flex flex-col sm:flex-row gap-6 px-6 py-6">
+        <Avatar
+          name={channel.name}
+          src={channel.avatar}
+          size={128}
+        />
 
-        {/* Channel Info */}
-        <div className="flex-1 text-center sm:text-left">
-          <h1 className="text-2xl sm:text-3xl font-bold">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold">
             {channel.name}
           </h1>
 
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">
-            @{channel.handle || "yourhandle"} •{" "}
-            {channel.subscribers || 0} subscriber
-            {channel.subscribers !== 1 && "s"} •{" "}
-            {videos.length} video
-            {videos.length !== 1 && "s"}
+          <p className="text-gray-600 mt-1">
+            @{channel.name.toLowerCase().replace(/\s+/g, "")} •{" "}
+            {videos.length} videos
           </p>
 
-          <p className="text-sm sm:text-base text-gray-700 mt-2">
+          <p className="mt-2 text-gray-700">
             {channel.description || "More about this channel..."}
           </p>
 
           {isOwner && (
-            <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4">
-              <button className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+            <div className="flex gap-3 mt-4">
+              <button className="px-4 py-2 bg-gray-100 rounded-full">
                 Customize channel
               </button>
-              <button className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+              <button className="px-4 py-2 bg-gray-100 rounded-full">
                 Manage videos
               </button>
             </div>
@@ -114,90 +172,53 @@ function Channel() {
         </div>
       </div>
 
-      {/* ===== CHANNEL TABS ===== */}
-      <div className="border-b px-4 sm:px-6">
-        <div className="relative flex items-center">
-          <div
-            ref={tabsRef}
-            className="flex gap-6 overflow-x-auto scrollbar-hide"
-          >
-            {["Home", "Videos"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-3 text-sm sm:text-base whitespace-nowrap border-b-2 transition
-                  ${
-                    activeTab === tab
-                      ? "border-black font-semibold"
-                      : "border-transparent text-gray-500 hover:text-black"
-                  }
-                `}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {/* Arrow (mobile only) */}
-          <button
-            onClick={scrollTabs}
-            className="absolute right-0 bg-white pl-3 md:hidden"
-          >
-            ▶
-          </button>
+      {/* ===== TABS ===== */}
+      <div className="border-b px-6">
+        <div className="flex gap-6 overflow-x-auto" ref={tabsRef}>
+          {["Home", "Videos"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3 border-b-2 ${
+                activeTab === tab
+                  ? "border-black font-semibold"
+                  : "border-transparent text-gray-500"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ===== TAB CONTENT ===== */}
-      <div className="px-4 sm:px-6 py-6">
-        {/* HOME TAB */}
-        {activeTab === "Home" && (
-          <>
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Latest videos
-            </h2>
-
-            {videos.length === 0 ? (
-              <p className="text-gray-500">No videos uploaded yet</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                {videos.slice(0, 4).map((video) => (
-                  <ChannelVideoCard
-                    key={video._id}
-                    video={video}
-                    onDelete={handleDelete}
-                    isOwner={isOwner}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* VIDEOS TAB */}
-        {activeTab === "Videos" && (
-          <>
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Videos
-            </h2>
-
-            {videos.length === 0 ? (
-              <p className="text-gray-500">No videos uploaded yet</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                {videos.map((video) => (
-                  <ChannelVideoCard
-                    key={video._id}
-                    video={video}
-                    onDelete={handleDelete}
-                    isOwner={isOwner}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
+      {/* ===== VIDEOS ===== */}
+      <div className="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {videos.map((video) => (
+          <ChannelVideoCard
+            key={video._id}
+            video={video}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            isOwner={isOwner}
+          />
+        ))}
       </div>
+
+      {/* ===== EDIT MODAL ===== */}
+      {editingVideo && (
+        <EditVideoModal
+          video={editingVideo}
+          onClose={() => setEditingVideo(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
+
+      {/* ===== SNACKBAR ===== */}
+      <Snackbar
+        message={snackbar.message}
+        type={snackbar.type}
+        onClose={() => setSnackbar({ message: "", type: "success" })}
+      />
     </div>
   );
 }

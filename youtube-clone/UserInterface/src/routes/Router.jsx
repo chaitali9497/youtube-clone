@@ -1,10 +1,12 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
-import App from "../App";
+import Main from "../Layout/Main";
 import Auth from "../Layout/Auth";
 import Loader from "../components/Loader";
-import Main from "../Layout/Main";
+
+import ProtectedRoute from "../routes/ProtectedRoute";
+import PublicRoute from "../routes/PublicRoute";
 
 // Lazy pages
 const Home = lazy(() => import("../pages/Home"));
@@ -23,46 +25,65 @@ const withSuspense = (Component) => (
 );
 
 const router = createBrowserRouter([
+  /* ================= PUBLIC ================= */
   {
     element: <Main />,
     errorElement: withSuspense(ErrorPage),
     children: [
       {
         index: true,
-        element: withSuspense(Home),
+        element: withSuspense(Home), //  SEARCH WORKS
       },
       {
         path: "watch/:id",
-        element: withSuspense(Watch),
-      },
-      {
-        path: "create-channel",
-        element: withSuspense(CreateChannel),
-      },
-      {
-        path: "channel/:channelId",
-        element: withSuspense(Channel),
-      },
-      {
-        path: "/upload",
-        element: <UploadVideo />,
+        element: withSuspense(Watch), //  WATCH WORKS
       },
     ],
   },
+
+  /* ================= PROTECTED ================= */
   {
-    element: <Auth />,
+    element: <ProtectedRoute />,
     children: [
       {
-        path: "create-account",
-        element: withSuspense(CreateAccount),
+        element: <Main />,
+        children: [
+          {
+            path: "create-channel",
+            element: withSuspense(CreateChannel),
+          },
+          {
+            path: "channel/:channelId",
+            element: withSuspense(Channel),
+          },
+          {
+            path: "upload",
+            element: <UploadVideo />,
+          },
+        ],
       },
+    ],
+  },
+
+  /* ================= AUTH ONLY ================= */
+  {
+    element: <PublicRoute />,
+    children: [
       {
-        path: "login",
-        element: withSuspense(Login),
+        element: <Auth />,
+        children: [
+          {
+            path: "login",
+            element: withSuspense(Login),
+          },
+          {
+            path: "create-account",
+            element: withSuspense(CreateAccount),
+          },
+        ],
       },
     ],
   },
 ]);
-
 
 export default router;

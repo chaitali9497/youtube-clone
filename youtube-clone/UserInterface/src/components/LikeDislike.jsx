@@ -3,19 +3,26 @@ import { FiThumbsUp, FiThumbsDown } from "react-icons/fi";
 import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 import api from "../utils/axios";
 
+/* helper */
+const getLikeKey = (videoId) => `like_state_${videoId}`;
+
 function LikeDislike({ videoId, initialLikes = 0 }) {
   const [likes, setLikes] = useState(Number(initialLikes) || 0);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  /* ================= INITIAL USER REACTION ================= */
+  /* restore state */
   useEffect(() => {
-    // optional: if later you expose "likedByUser" from backend
-    setLikes(Number(initialLikes) || 0);
-  }, [initialLikes]);
+    const saved = localStorage.getItem(getLikeKey(videoId));
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setLiked(parsed.liked);
+      setDisliked(parsed.disliked);
+    }
+  }, [videoId]);
 
-  /* ================= LIKE ================= */
+  /* LIKE */
   const handleLike = async (e) => {
     e.stopPropagation();
     if (loading) return;
@@ -23,14 +30,16 @@ function LikeDislike({ videoId, initialLikes = 0 }) {
     try {
       setLoading(true);
 
-      // optimistic UI
-      setLiked((prev) => !prev);
-      setDisliked(false);
-      setLikes((prev) => (liked ? prev - 1 : prev + 1));
-
       const res = await api.post(`/videos/${videoId}/like`);
 
       setLikes(res.data.likes);
+      setLiked(true);
+      setDisliked(false);
+
+      localStorage.setItem(
+        getLikeKey(videoId),
+        JSON.stringify({ liked: true, disliked: false })
+      );
     } catch (err) {
       console.error("Like failed", err.response?.data);
     } finally {
@@ -38,7 +47,7 @@ function LikeDislike({ videoId, initialLikes = 0 }) {
     }
   };
 
-  /* ================= DISLIKE ================= */
+  /* DISLIKE */
   const handleDislike = async (e) => {
     e.stopPropagation();
     if (loading) return;
@@ -46,14 +55,16 @@ function LikeDislike({ videoId, initialLikes = 0 }) {
     try {
       setLoading(true);
 
-      // optimistic UI
-      setDisliked((prev) => !prev);
-      if (liked) {
-        setLiked(false);
-        setLikes((prev) => Math.max(0, prev - 1));
-      }
+      const res = await api.post(`/videos/${videoId}/dislike`);
 
-      await api.post(`/videos/${videoId}/dislike`);
+      setLikes(res.data.likes); // backend should return updated likes
+      setLiked(false);
+      setDisliked(true);
+
+      localStorage.setItem(
+        getLikeKey(videoId),
+        JSON.stringify({ liked: false, disliked: true })
+      );
     } catch (err) {
       console.error("Dislike failed", err.response?.data);
     } finally {
@@ -63,14 +74,14 @@ function LikeDislike({ videoId, initialLikes = 0 }) {
 
   return (
     <div
-      className="flex items-center bg-gray-200 rounded-full overflow-hidden"
+      className="flex items-center bg-gray-100 rounded-full overflow-hidden"
       onClick={(e) => e.stopPropagation()}
     >
       {/* LIKE */}
       <button
         onClick={handleLike}
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-300 disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-200"
       >
         {liked ? (
           <FaThumbsUp className="text-black text-lg" />
@@ -83,13 +94,13 @@ function LikeDislike({ videoId, initialLikes = 0 }) {
         </span>
       </button>
 
-      <div className="w-px h-6 bg-gray-400" />
+      <div className="w-px h-6 bg-gray-300" />
 
       {/* DISLIKE */}
       <button
         onClick={handleDislike}
         disabled={loading}
-        className="px-4 py-2 hover:bg-gray-300 disabled:opacity-50"
+        className="px-4 py-2 hover:bg-gray-200"
       >
         {disliked ? (
           <FaThumbsDown className="text-black text-lg" />

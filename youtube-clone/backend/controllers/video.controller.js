@@ -269,6 +269,7 @@ export const updateVideo = async (req, res) => {
 
   if (title !== undefined) video.title = title;
   if (description !== undefined) video.description = description;
+  
 
   await video.save();
 
