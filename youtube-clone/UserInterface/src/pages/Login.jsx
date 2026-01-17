@@ -58,7 +58,6 @@ function Login() {
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("isLoggedIn", "true");
 
-      // ⏳ ensure loader shows at least 500ms (smooth UX)
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(500 - elapsed, 0);
 
@@ -116,6 +115,9 @@ function Login() {
 
         {/* EMAIL */}
         <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
           <input
             type="email"
             autoCapitalize="none"
@@ -140,6 +142,9 @@ function Login() {
 
         {/* PASSWORD */}
         <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
           <input
             type="password"
             className={`input w-full ${
