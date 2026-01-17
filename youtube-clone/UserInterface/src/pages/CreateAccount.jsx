@@ -257,9 +257,9 @@ function CreateAccount() {
                     className="absolute right-3 top-2.5 text-gray-400"
                   >
                     {showConfirm ? (
-                      <EyeSlashIcon className="w-5 h-5" />
-                    ) : (
                       <EyeIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeSlashIcon className="w-5 h-5" />
                     )}
                   </button>
 
