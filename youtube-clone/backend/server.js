@@ -15,18 +15,31 @@ connectDB();
 
 const app = express();
 
-/* ===== CORS ===== */
+/*  CORS  */
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://youtube-clone-h7ec-fq0cnv3et-chaitali9497s-projects.vercel.app",
-    ],
+    origin: (origin, callback) => {
+      // allow requests with no origin (Postman, mobile apps)
+      if (!origin) return callback(null, true);
+
+      // allow localhost
+      if (origin.startsWith("http://localhost")) {
+        return callback(null, true);
+      }
+
+      // allow all vercel preview deployments
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 
 
 
@@ -38,9 +51,10 @@ app.use("/api/videos", videoRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/channels", channelRoutes);
 
+
 app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });
