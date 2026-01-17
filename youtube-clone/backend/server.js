@@ -18,10 +18,16 @@ const app = express();
 /*  CORS  */
 app.use(
   cors({
-    origin: true, 
+    origin: [
+      "http://localhost:5173", // local frontend
+      "https://youtube-clone-h7ec-drrvfffn5-chaitali9497s-projects.vercel.app"
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 
 
 app.use(express.json());
