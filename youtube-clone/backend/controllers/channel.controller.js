@@ -28,7 +28,7 @@ export const createChannel = async (req, res) => {
         videoUrl:
           "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         thumbnail:
-          "https://via.placeholder.com/320x180?text=Welcome+Video",
+          "https://healthin2nds.com/wp-content/uploads/2026/01/big_bunny_2.jpg",
         channel: channel._id,
         commentsCount: 0,
       },
@@ -38,7 +38,7 @@ export const createChannel = async (req, res) => {
         videoUrl:
           "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         thumbnail:
-          "https://via.placeholder.com/320x180?text=Intro+Video",
+          "https://healthin2nds.com/wp-content/uploads/2026/01/big_bunny.jpg",
         channel: channel._id,
         commentsCount: 0,
       },
