@@ -113,45 +113,70 @@ youtube-clone/
 ###  Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/youtube-clone.git
-cd youtube-clone
+- git clone https://github.com/your-username/youtube-clone.git
 
-### Backend Setup
+- cd youtube-clone
+---
 
-```bash
-cd backend
-npm install
-npm run dev
-
-3️⃣ Frontend Setup
+## Backend Setup
 
 ```bash
-cd frontend
-npm install
-npm run dev
+- cd backend
 
-### Application Flow
+- npm install
 
-User logs in → JWT stored in localStorage
-Frontend sends authenticated API requests
-Backend middleware verifies token
-Controllers handle business logic
-MongoDB stores application data
+- npm run dev
 
-### Key Concepts Implemented
 
-MVC architecture
-RESTful API design
-Token-based authentication
-Secure CRUD operations
-Error handling & validation
-Deployment best practices
+## Frontend Setup
 
-### Deployment 
+```bash
+- cd frontend
 
-Frontend deployed on Vercel
-Backend deployed on Render
-CORS properly configured
-Environment variables secured
-Production-ready build
+- npm install
+
+- npm run dev
+---
+###  Application Flow
+
+- User logs in → JWT stored in localStorage
+
+- Frontend sends authenticated API requests
+
+- Backend middleware verifies token
+
+- Controllers handle business logic
+
+- MongoDB stores application data
+
+---
+
+#### Key Concepts Implemented
+
+- MVC architecture
+
+- RESTful API design
+
+- Token-based authentication
+
+- Secure CRUD operations
+
+- Error handling & validation
+
+- Deployment best practices
+---
+
+##### Deployment 
+
+- Frontend deployed on Vercel
+
+- Backend deployed on Render
+
+- CORS properly configured
+
+- Environment variables secured
+
+- Production-ready build
+
+---
 
