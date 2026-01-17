@@ -22,7 +22,7 @@ function CreateChannel() {
           navigate(`/channel/${res.data.channel._id}`, { replace: true });
         }
       } catch {
-        // no channel → stay here
+        
       }
     };
 

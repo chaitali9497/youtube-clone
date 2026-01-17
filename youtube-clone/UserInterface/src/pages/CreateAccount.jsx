@@ -111,7 +111,7 @@ function CreateAccount() {
 
             {/* LEFT */}
             <div>
-              <img src={googleIcon} alt="Google" className="h-8 mb-2" />
+              <img src={googleIcon} alt="Google" className="h-15 mb-2" />
 
               <h2 className="text-xl font-medium mb-6">
                 Create your Google Account
@@ -208,9 +208,9 @@ function CreateAccount() {
                     className="absolute right-3 top-2.5 text-gray-400"
                   >
                     {showPassword ? (
-                      <EyeSlashIcon className="w-5 h-5" />
-                    ) : (
                       <EyeIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeSlashIcon className="w-5 h-5" />
                     )}
                   </button>
 
