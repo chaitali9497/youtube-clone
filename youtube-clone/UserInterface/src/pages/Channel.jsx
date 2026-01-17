@@ -214,10 +214,13 @@ function Channel() {
       )}
 
       {/* ===== SNACKBAR ===== */}
-      <Snackbar
+     <Snackbar
         message={snackbar.message}
         type={snackbar.type}
-        onClose={() => setSnackbar({ message: "", type: "success" })}
+        action={snackbar.action}
+        onClose={() =>
+          setSnackbar({ message: "", type: "success"})
+        }
       />
     </div>
   );

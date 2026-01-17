@@ -23,7 +23,7 @@ app.use(
       "https://youtube-clone-h7ec-drrvfffn5-chaitali9497s-projects.vercel.app"
     ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );

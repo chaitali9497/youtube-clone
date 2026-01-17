@@ -1,70 +1,36 @@
-import { useEffect } from "react";
-import { FiX } from "react-icons/fi";
-
-function Snackbar({
-  message,
-  type = "success",
-  action,
-  duration = 3000,
-  onClose,
-}) {
+function Snackbar({ message, type = "success", action, onClose }) {
   if (!message) return null;
 
-  useEffect(() => {
-    if (!duration) return;
-    const t = setTimeout(onClose, duration);
-    return () => clearTimeout(t);
-  }, [message]);
-
-  const styles = {
-    success: "bg-green-600",
-    error: "bg-red-600",
-    warning: "bg-yellow-500 text-black",
-    info: "bg-gray-900",
-  };
+  const isConfirm = Boolean(action);
 
   return (
-    <div
-      className="
-        fixed z-50
-        bottom-4 sm:bottom-6
-        left-4 right-4
-        sm:left-1/2 sm:right-auto sm:-translate-x-1/2
-      "
-    >
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
       <div
-        className={`
-          flex items-center justify-between gap-3
-          px-4 py-3
-          rounded-xl sm:rounded-full
-          shadow-xl
-          text-sm font-medium
-          animate-snackbar
-          ${styles[type]}
-        `}
+        className={`flex items-center gap-4 px-5 py-3 rounded-lg shadow-lg text-white
+          ${type === "error" ? "bg-red-600" : "bg-green-600"}`}
       >
-        {/* MESSAGE */}
-        <span className="flex-1 truncate sm:whitespace-normal">
-          {message}
-        </span>
+        <span className="text-sm">{message}</span>
 
-        {/* ACTION */}
-        {action && (
-          <button
-            onClick={action.onClick}
-            className="font-semibold underline whitespace-nowrap"
-          >
-            {action.label}
-          </button>
+        {/* BUTTONS ONLY FOR CONFIRM */}
+        {isConfirm && (
+          <div className="flex gap-2">
+            {/* OK */}
+            <button
+              onClick={action.onClick}
+              className="px-3 py-1 bg-white text-red-600 rounded text-sm font-semibold"
+            >
+              OK
+            </button>
+
+            {/* CANCEL */}
+            <button
+              onClick={onClose}
+              className="px-3 py-1 border border-white rounded text-sm"
+            >
+              Cancel
+            </button>
+          </div>
         )}
-
-        {/* CLOSE */}
-        <button
-          onClick={onClose}
-          className="p-1 rounded-full hover:bg-black/20 transition"
-        >
-          <FiX size={18} />
-        </button>
       </div>
     </div>
   );
