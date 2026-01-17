@@ -15,12 +15,12 @@ connectDB();
 
 const app = express();
 
-/*  CORS  */
+/* ===== CORS ===== */
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", // local frontend
-      "https://youtube-clone-h7ec-drrvfffn5-chaitali9497s-projects.vercel.app"
+      "http://localhost:5173",
+      "https://youtube-clone-h7ec-fq0cnv3et-chaitali9497s-projects.vercel.app",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -28,7 +28,8 @@ app.use(
   })
 );
 
-
+//  Handle preflight requests
+app.options("*", cors());
 
 app.use(express.json());
 
@@ -38,10 +39,9 @@ app.use("/api/videos", videoRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/channels", channelRoutes);
 
-
 app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(` Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
