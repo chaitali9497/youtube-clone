@@ -5,8 +5,8 @@ import {
   getVideoById,
   likeVideo,
   dislikeVideo,
-  deleteVideo,      // ✅ ADD
-  updateVideo,      // ✅ ADD
+  deleteVideo,      
+  updateVideo,      
 } from "../controllers/video.controller.js";
 import authMiddleware from "../middleware/auth.middleware.js";
 

@@ -82,7 +82,7 @@ This project is ideal for **learning, portfolio showcase, and academic evaluatio
 
 ---
 
- 📁 Project Structure
+  Project Structure
 
 youtube-clone/
 │
